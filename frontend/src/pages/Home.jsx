@@ -28,3 +28,9 @@ export default function Home(){
     </main>
   )
 }
+
+// สมมติ categories มีครบทุกหมวด
+const ordered = [
+  ...favorites.filter(cat=>categories.includes(cat)),
+  ...categories.filter(cat=>!favorites.includes(cat))
+];
