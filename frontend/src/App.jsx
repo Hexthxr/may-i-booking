@@ -1,18 +1,28 @@
 
-
 // import { Routes, Route } from 'react-router-dom';
 // import Header from './components/Header';
 // import Footer from './components/Footer';
 
 // import Home from './pages/Home';
-// import Browse from './pages/Browse';          // หน้าดูตามหมวด
+// import Browse from './pages/Browse';
 // import Login from './pages/Login';
 // import Register from './pages/Register';
-// import BookDetail from './pages/BookDetail';
+// import BookDetail from './pages/BookDetail';          // ✅ import แค่ครั้งเดียว
+
+// import Account from './pages/Account.jsx';
+// import AddressBook from './pages/AddressBook.jsx';
+// import Orders from './pages/Orders.jsx';
+// import Settings from './pages/Settings.jsx';
+// import Favorites from './pages/Favorites.jsx';
+// import HelpCenter from './pages/HelpCenter.jsx';
+
 // import AdminDashboard from './pages/AdminDashboard';
 // import AdminBooks from './pages/AdminBooks';
 // import AdminBookForm from './pages/AdminBookForm';
+
 // import ProtectedRoute from './components/ProtectedRoute';
+
+// import SearchResults from './pages/SearchResults';     // ✅ import ครั้งเดียว
 
 // export default function App() {
 //   return (
@@ -21,51 +31,35 @@
 //       <Routes>
 //         <Route path="/" element={<Home />} />
 //         <Route path="/category/:name" element={<Browse />} />
+
+//         {/* ✅ ใช้เส้นทางเดียวให้ชัดเจน */}
+//         <Route path="/books/:id" element={<BookDetail />} />
+
 //         <Route path="/login" element={<Login />} />
 //         <Route path="/register" element={<Register />} />
-//         <Route path="/book/:id" element={<BookDetail />} />
+//         <Route path="/search" element={<SearchResults />} />
 
-//         <Route
-//           path="/admin"
-//           element={
-//             <ProtectedRoute role="admin">
-//               <AdminDashboard />
-//             </ProtectedRoute>
-//           }
-//         />
-//         <Route
-//           path="/admin/books"
-//           element={
-//             <ProtectedRoute role="admin">
-//               <AdminBooks />
-//             </ProtectedRoute>
-//           }
-//         />
-//         <Route
-//           path="/admin/books/new"
-//           element={
-//             <ProtectedRoute role="admin">
-//               <AdminBookForm />
-//             </ProtectedRoute>
-//           }
-//         />
-//         <Route
-//           path="/admin/books/:id"
-//           element={
-//             <ProtectedRoute role="admin">
-//               <AdminBookForm />
-//             </ProtectedRoute>
-//           }
-//         />
+//         {/* Force mapping */}
+//         <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+//         <Route path="/profile" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+//         <Route path="/account/address" element={<ProtectedRoute><AddressBook /></ProtectedRoute>} />
+//         <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+//         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+//         <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+//         <Route path="/help" element={<HelpCenter />} />
+
+//         {/* Admin */}
+//         <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+//         <Route path="/admin/books" element={<ProtectedRoute role="admin"><AdminBooks /></ProtectedRoute>} />
+//         <Route path="/admin/books/new" element={<ProtectedRoute role="admin"><AdminBookForm /></ProtectedRoute>} />
+//         <Route path="/admin/books/:id" element={<ProtectedRoute role="admin"><AdminBookForm /></ProtectedRoute>} />
 //       </Routes>
 //       <Footer />
 //     </>
 //   );
 // }
 
-// frontend/src/App.jsx
-import { Routes, Route } from 'react-router-dom';
-
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
@@ -73,8 +67,14 @@ import Home from './pages/Home';
 import Browse from './pages/Browse';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import BookDetail from './pages/BookDetail';
-import Profile from './pages/Profile';
+import BookDetail from './pages/BookDetail';          // ✅ import แค่ครั้งเดียว
+
+import Account from './pages/Account.jsx';
+import AddressBook from './pages/AddressBook.jsx';
+import Orders from './pages/Orders.jsx';
+import Settings from './pages/Settings.jsx';
+import Favorites from './pages/Favorites.jsx';
+import HelpCenter from './pages/HelpCenter.jsx';
 
 import AdminDashboard from './pages/AdminDashboard';
 import AdminBooks from './pages/AdminBooks';
@@ -82,66 +82,43 @@ import AdminBookForm from './pages/AdminBookForm';
 
 import ProtectedRoute from './components/ProtectedRoute';
 
+import SearchResults from './pages/SearchResults';     // ✅ import ครั้งเดียว
+
 export default function App() {
   return (
     <>
-      {/* ส่วนหัวอยู่ “นอก” <Routes> เสมอ */}
       <Header />
-
       <Routes>
-        {/* สาธารณะ */}
+        {/* Public */}
         <Route path="/" element={<Home />} />
         <Route path="/category/:name" element={<Browse />} />
-        <Route path="/book/:id" element={<BookDetail />} />
+        <Route path="/search" element={<SearchResults />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* ผู้ใช้ทั่วไป (ต้องล็อกอิน) */}
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+        {/* Book detail: ใช้เส้นทางเดียวให้ชัดเจน */}
+        <Route path="/books/:id" element={<BookDetail />} />
+        {/* Redirect กันพลาดจากลิงก์เก่า /book/:id */}
+        <Route path="/book/:id" element={<Navigate to="/books/:id" replace />} />
 
-        {/* แอดมินเท่านั้น */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute role="admin">
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/books"
-          element={
-            <ProtectedRoute role="admin">
-              <AdminBooks />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/books/new"
-          element={
-            <ProtectedRoute role="admin">
-              <AdminBookForm />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/books/:id"
-          element={
-            <ProtectedRoute role="admin">
-              <AdminBookForm />
-            </ProtectedRoute>
-          }
-        />
+        {/* Account */}
+        <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+        <Route path="/profile" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+        <Route path="/account/address" element={<ProtectedRoute><AddressBook /></ProtectedRoute>} />
+        <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/favorites" element={<ProtectedRoute><Favorites /></ProtectedRoute>} />
+        <Route path="/help" element={<HelpCenter />} />
+
+        {/* Admin */}
+        <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin/books" element={<ProtectedRoute role="admin"><AdminBooks /></ProtectedRoute>} />
+        <Route path="/admin/books/new" element={<ProtectedRoute role="admin"><AdminBookForm /></ProtectedRoute>} />
+        <Route path="/admin/books/:id" element={<ProtectedRoute role="admin"><AdminBookForm /></ProtectedRoute>} />
+
+        {/* (Optional) 404 */}
+        {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
       </Routes>
-
-      {/* ฟุตเตอร์อยู่ “นอก” <Routes> เช่นกัน */}
       <Footer />
     </>
   );
