@@ -30,7 +30,7 @@ export default function Home(){
 }
 
 // สมมติ categories มีครบทุกหมวด
-const ordered = [
-  ...favorites.filter(cat=>categories.includes(cat)),
-  ...categories.filter(cat=>!favorites.includes(cat))
-];
+// const ordered = [
+//   ...favorites.filter(cat=>categories.includes(cat)),
+//   ...categories.filter(cat=>!favorites.includes(cat))
+// ];
