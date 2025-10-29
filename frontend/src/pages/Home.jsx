@@ -1,11 +1,14 @@
+
 import { useEffect, useState } from 'react';
 import api from '../api';
 import CategorySection from '../components/CategorySection';
+import '../styles/home.css';   // ใช้สไตล์ที่อยู่ในโฟลเดอร์ styles
 
 const CATS = ['การเงินการลงทุน','มังงะ','นิยาย','อาหารเเละสุขภาพ','การเรียน'];
 
 export default function Home(){
   const [data, setData] = useState({});
+
   useEffect(()=>{
     (async ()=>{
       const result = {};
@@ -18,19 +21,22 @@ export default function Home(){
   }, []);
 
   return (
-    <main>
+    <main className="home-page">
       <section className="hero">
         <div className="container">
-          <h1>ยินดีต้อนรับสู่ May i Booking</h1>
+          {/* กล่องไฮไลท์ครอบ h1+p */}
+          <div className="hero-highlight">
+            <h1>ยินดีต้อนรับสู่ May i Booking</h1>
+            <p className="hero-sub">เลือกอ่านได้ตามใจชอบ — หนังสือใหม่อัปเดตตลอด</p>
+          </div>
         </div>
       </section>
-      {CATS.map(c => <CategorySection key={c} title={c} items={data[c] || []} />)}
-    </main>
-  )
-}
 
-// สมมติ categories มีครบทุกหมวด
-const ordered = [
-  ...favorites.filter(cat=>categories.includes(cat)),
-  ...categories.filter(cat=>!favorites.includes(cat))
-];
+      <div className="home-content container">
+        {CATS.map(c => (
+          <CategorySection key={c} title={c} items={data[c] || []} />
+        ))}
+      </div>
+    </main>
+  );
+}
