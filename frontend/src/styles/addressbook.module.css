@@ -23,8 +23,15 @@
 
 .note{ color:var(--muted); margin-top:12px; }
 
-.grid{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:12px; }
-@media (max-width:800px){ .grid{ grid-template-columns: 1fr; } }
+/* addressbook.module.css */
+.grid{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+/* ไม่จำเป็นต้องมี media query ของ .grid แล้ว ถ้ามีอันเก่าอยู่ ลบทิ้งได้ */
+
 
 .addrCard{ background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px; }
 .addrHead{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
