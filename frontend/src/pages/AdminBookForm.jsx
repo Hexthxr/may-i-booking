@@ -1,232 +1,4 @@
 
-// import { useEffect, useState } from 'react';
-// import { useNavigate, useParams, Link } from 'react-router-dom';
-// import api, { apiBase } from '../api';
-
-// // หมวดหมู่ต้องตรงกับ enum ฝั่ง backend (models/Book.js)
-// const CATS = ['การเงินการลงทุน','มังงะ','นิยาย','อาหารเเละสุขภาพ','การเรียน'];
-
-// export default function AdminBookForm() {
-//   const { id } = useParams();
-//   const editing = Boolean(id);
-//   const nav = useNavigate();
-
-//   const [form, setForm] = useState({
-//     sku: '',
-//     title: '',
-//     description: '',
-//     authors: '',
-//     publisher: '',
-//     language: 'TH',
-//     pages: 0,
-//     year: 2025,
-//     category: CATS[0],
-//     price: 0
-//   });
-//   const [file, setFile] = useState(null);
-//   const [previewUrl, setPreviewUrl] = useState('');
-
-//   // โหลดข้อมูลเดิมถ้าเป็นโหมดแก้ไข
-//   useEffect(() => {
-//     if (!editing) return;
-//     (async () => {
-//       const { data } = await api.get(`/books/${id}`);
-//       setForm({
-//         sku: data.sku || '',
-//         title: data.title || '',
-//         description: data.description || '',
-//         authors: (data.authors || []).join(', '),
-//         publisher: data.publisher || '',
-//         language: data.language || 'TH',
-//         pages: data.pages || 0,
-//         year: data.year || 2025,
-//         category: data.category || CATS[0],
-//         price: data.price ?? 0
-//       });
-//       // รูปหน้าปกเดิม (ใช้ endpoint /books/:id/cover)
-//       setPreviewUrl(`${apiBase()}/books/${id}/cover?v=${encodeURIComponent(data.updatedAt || '')}`);
-//     })();
-//   }, [editing, id]);
-
-//   function onChange(e) {
-//     const { name, value } = e.target;
-//     setForm(prev => ({
-//       ...prev,
-//       [name]:
-//         name === 'pages' || name === 'year' || name === 'price'
-//           ? Number(value)
-//           : value
-//     }));
-//   }
-
-//   function onFile(e) {
-//     const f = e.target.files?.[0];
-//     setFile(f || null);
-//     if (f) setPreviewUrl(URL.createObjectURL(f));
-//   }
-
-//   async function onSubmit(e) {
-//     e.preventDefault();
-//     const payload = {
-//       sku: form.sku?.trim() || undefined,
-//       title: form.title?.trim(),
-//       description: form.description?.trim(),
-//       authors: (form.authors || '')
-//         .split(',')
-//         .map(s => s.trim())
-//         .filter(Boolean),
-//       publisher: form.publisher?.trim(),
-//       language: form.language,
-//       pages: Number(form.pages) || 0,
-//       year: Number(form.year) || 2025,
-//       category: form.category,
-//       price: Number(form.price) || 0
-//     };
-
-//     const fd = new FormData();
-//     fd.append('data', JSON.stringify(payload));
-//     if (file) fd.append('cover', file);
-
-//     if (editing) {
-//       await api.put(`/books/${id}`, fd, {
-//         headers: { 'Content-Type': 'multipart/form-data' }
-//       });
-//     } else {
-//       await api.post('/books', fd, {
-//         headers: { 'Content-Type': 'multipart/form-data' }
-//       });
-//     }
-//     nav('/admin/books');
-//   }
-
-//   return (
-//     <div className="container" style={{ minHeight: '70vh' }}>
-//       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '16px 0' }}>
-//         <Link to="/admin/books" className="btn secondary">← กลับรายการหนังสือ</Link>
-//         <h2 style={{ margin: 0 }}>{editing ? 'แก้ไขหนังสือ' : 'เพิ่มหนังสือใหม่'}</h2>
-//       </div>
-
-//       <form
-//         className="card"
-//         onSubmit={onSubmit}
-//         style={{
-//           display: 'grid',
-//           gridTemplateColumns: '320px 1fr',
-//           gap: 24,
-//           padding: 24
-//         }}
-//       >
-//         {/* ซ้าย: พรีวิวปก + อัปโหลดไฟล์ */}
-//         <div>
-//           <div
-//             style={{
-//               width: '100%',
-//               aspectRatio: '3/4',
-//               overflow: 'hidden',
-//               borderRadius: 12,
-//               background: '#f2f2f2'
-//             }}
-//           >
-//             {previewUrl ? (
-//               <img
-//                 src={previewUrl}
-//                 alt="preview"
-//                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-//               />
-//             ) : (
-//               <div
-//                 style={{
-//                   display: 'flex',
-//                   justifyContent: 'center',
-//                   alignItems: 'center',
-//                   height: '100%'
-//                 }}
-//               >
-//                 ไม่มีรูปปก
-//               </div>
-//             )}
-//           </div>
-//           <input type="file" accept="image/*" onChange={onFile} style={{ marginTop: 12 }} />
-//         </div>
-
-//         {/* ขวา: ฟอร์มข้อมูล */}
-//         <div className="form-grid">
-//           <div className="row">
-//             <label>SKU</label>
-//             <input name="sku" value={form.sku} onChange={onChange} placeholder="เช่น BK-001" />
-//           </div>
-
-//           <div className="row">
-//             <label>ชื่อเรื่อง *</label>
-//             <input required name="title" value={form.title} onChange={onChange} />
-//           </div>
-
-//           <div className="row">
-//             <label>คำอธิบาย</label>
-//             <textarea name="description" value={form.description} onChange={onChange} rows={6} />
-//           </div>
-
-//           <div className="row">
-//             <label>ผู้เขียน (คั่นด้วย ,)</label>
-//             <input name="authors" value={form.authors} onChange={onChange} placeholder="เช่น A, B" />
-//           </div>
-
-//           <div className="row two">
-//             <div>
-//               <label>สำนักพิมพ์</label>
-//               <input name="publisher" value={form.publisher} onChange={onChange} />
-//             </div>
-//             <div>
-//               <label>ภาษา</label>
-//               <select name="language" value={form.language} onChange={onChange}>
-//                 <option value="TH">TH</option>
-//                 <option value="EN">EN</option>
-//               </select>
-//             </div>
-//           </div>
-
-//           <div className="row two">
-//             <div>
-//               <label>จำนวนหน้า</label>
-//               <input type="number" name="pages" value={form.pages} onChange={onChange} min="0" />
-//             </div>
-//             <div>
-//               <label>ปีพิมพ์</label>
-//               <input type="number" name="year" value={form.year} onChange={onChange} min="1900" max="2100" />
-//             </div>
-//           </div>
-
-//           <div className="row two">
-//             <div>
-//               <label>หมวดหมู่ *</label>
-//               <select name="category" value={form.category} onChange={onChange}>
-//                 {CATS.map(c => (
-//                   <option key={c} value={c}>
-//                     {c}
-//                   </option>
-//                 ))}
-//               </select>
-//             </div>
-//             <div>
-//               <label>ราคา</label>
-//               <input type="number" name="price" value={form.price} onChange={onChange} min="0" step="1" />
-//             </div>
-//           </div>
-
-//           <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-//             <button className="btn" type="submit">
-//               {editing ? 'บันทึกการแก้ไข' : 'สร้างหนังสือ'}
-//             </button>
-//             <Link className="btn secondary" to="/admin/books">
-//               ยกเลิก
-//             </Link>
-//           </div>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// }
-
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import api, { apiBase } from '../api';
@@ -250,7 +22,8 @@ export default function AdminBookForm() {
     pages: 0,
     year: 2025,
     category: CATS[0],
-    price: 0
+    price: 0,
+    stock: 0, // ✅ เพิ่ม stock (ค่าเริ่มต้น 0)
   });
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -272,7 +45,8 @@ export default function AdminBookForm() {
         pages: data.pages || 0,
         year: data.year || 2025,
         category: data.category || CATS[0],
-        price: data.price ?? 0
+        price: data.price ?? 0,
+        stock: data.stock ?? 0, // ✅ ดึง stock จากฐานข้อมูล
       });
       setPreviewUrl(`${apiBase()}/books/${id}/cover?v=${encodeURIComponent(data.updatedAt || '')}`);
     })();
@@ -282,7 +56,13 @@ export default function AdminBookForm() {
     const { name, value } = e.target;
     setForm(prev => ({
       ...prev,
-      [name]: name === 'pages' || name === 'year' || name === 'price' ? Number(value) : value
+      [name]:
+        name === 'pages' ||
+        name === 'year' ||
+        name === 'price' ||
+        name === 'stock'         // ✅ แปลง stock เป็น number
+          ? Number(value)
+          : value
     }));
   }
 
@@ -327,7 +107,8 @@ export default function AdminBookForm() {
         pages: Number(form.pages) || 0,
         year: Number(form.year) || 2025,
         category: form.category,
-        price: Number(form.price) || 0
+        price: Number(form.price) || 0,
+        stock: Math.max(0, Number(form.stock) || 0), // ✅ ส่งค่า stock ไป backend
       };
 
       const fd = new FormData();
@@ -426,6 +207,15 @@ export default function AdminBookForm() {
                 <input type="number" name="year" value={form.year} onChange={onChange} min="1900" max="2100" />
               </div>
             </div>
+
+            {/* ✅ แถวสต๊อก: ใช้คลาสเดิม ไม่เปลี่ยนเลย์เอาต์ */}
+            <div className="abf-two">
+              <div>
+                <Label text="สต๊อก" />
+                <input type="number" name="stock" value={form.stock} onChange={onChange} min="0" />
+              </div>
+              <div />
+            </div>
           </FieldGroup>
 
           {/* Group: Authors */}
@@ -493,4 +283,3 @@ function Label({ text, required }) {
 function Hint({ text }) {
   return <div className="abf-hint">{text}</div>;
 }
-  
