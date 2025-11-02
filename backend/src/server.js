@@ -5,15 +5,15 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { fileURLToPath } from 'url';
 
 import { connectDB } from './config/db.js';
 import authRouter from './routes/auth.js';
 import bookRouter from './routes/books.js';
-import orderRouter from './routes/orders.js';
+import ordersRouter from './routes/orders.js';
 import userRouter from './routes/users.js';
 import { UPLOAD_DIR } from './config/paths.js';
 import addressesRouter from './routes/addresses.js';
+import cartRoute from './routes/cart.js';
 
 dotenv.config();
 const app = express();
@@ -40,9 +40,10 @@ app.use('/uploads', express.static(UPLOAD_DIR));
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/books', bookRouter);
-app.use('/api/orders', orderRouter);
+app.use('/api/orders', ordersRouter);
 app.use('/api/users', userRouter);
 app.use('/api/addresses', addressesRouter);
+app.use('/api/cart', cartRoute);
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'May i Booking API running' });

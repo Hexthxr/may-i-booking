@@ -1,114 +1,117 @@
-// import { useEffect, useState } from 'react';
-// import { useParams, useNavigate } from 'react-router-dom';
-// import api, { apiBase } from '../api';
-// import { useAuth } from '../context/AuthContext';
-
-// export default function BookDetail(){
-//   const { id } = useParams();
-//   const [book, setBook] = useState(null);
-//   const { user } = useAuth();
-//   const nav = useNavigate();
-
-//   useEffect(()=>{
-//     (async ()=>{
-//       const res = await api.get(`/books/${id}`);
-//       setBook(res.data);
-//     })();
-//   }, [id]);
-
-//   if (!book) return <div className="container" style={{margin:'24px auto'}}>Loading...</div>;
-
-//   const purchase = ()=>{
-//     if (!user) {
-//       alert('ต้องสมัครสมาชิก/เข้าสู่ระบบก่อนจึงจะสั่งซื้อได้');
-//       nav('/register');
-//       return;
-//     }
-//     alert('เดโม: หน้านี้ยังไม่เปิดขายจริง (จำกัดสิทธิ์เฉพาะสมาชิก)');
-//   };
-
-//   const src = `${apiBase()}/books/${book._id}/cover?v=${encodeURIComponent(book.updatedAt || '')}`;
-
-//   return (
-//     <div className="container" style={{margin:'24px auto'}}>
-//       <div style={{display:'grid',gridTemplateColumns:'1fr 2fr',gap:24}}>
-//         <img src={src} alt={book.title} style={{width:'100%',borderRadius:16}}
-//              onError={(e)=>{e.currentTarget.src='https://placehold.co/600x800?text=No+Cover'}} />
-//         <div>
-//           <div className="badge">{book.category}</div>
-//           <h1 style={{margin:'8px 0'}}>{book.title}</h1>
-//           <div style={{fontSize:18, fontWeight:800, margin:'6px 0'}}>ราคา: ฿{Number(book.price ?? 0).toLocaleString('th-TH')}</div>
-//           <div>ผู้เขียน: {book.authors?.join(', ') || 'ไม่ระบุ'}</div>
-//           <div>สำนักพิมพ์: {book.publisher || '-'}</div>
-//           <div>ภาษา: {book.language || '-'}</div>
-//           <div>จำนวนหน้า: {book.pages || '-'}</div>
-//           <div>ปีที่พิมพ์: {book.year || '-'}</div>
-//           <p style={{marginTop:12,whiteSpace:'pre-wrap'}}>{book.description || '-'}</p>
-//           <div style={{display:'flex',gap:8,marginTop:12}}>
-//             <button className="btn secondary" onClick={purchase}>สั่งซื้อ (สมาชิกเท่านั้น)</button>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
+// frontend/src/pages/BookDetail.jsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api, { apiBase } from '../api';
 import { useAuth } from '../context/AuthContext';
+import { addToLocalCart, addServerCart } from '../utils/cart';
 
 export default function BookDetail() {
   const { id } = useParams();
   const [book, setBook] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const nav = useNavigate();
 
-  // ✅ modal state
+  // โมดอลบังคับล็อกอิน
   const [showAuthModal, setShowAuthModal] = useState(false);
+  // ป้องกันกดซ้ำตอนเพิ่มตะกร้า
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const res = await api.get(`/books/${id}`);
-      setBook(res.data);
+      try {
+        const res = await api.get(`/books/${id}`);
+        setBook(res.data);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [id]);
 
-  if (!book) return <div className="container" style={{ margin: '24px auto' }}>Loading...</div>;
+  if (loading) {
+    return <div className="container" style={{ margin: '24px auto' }}>Loading...</div>;
+  }
+  if (!book) {
+    return <div className="container" style={{ margin: '24px auto' }}>ไม่พบบุ๊คนี้</div>;
+  }
 
+  // ไปเช็คเอาท์ (สมาชิกเท่านั้น)
   const purchase = () => {
     if (!user) {
-      setShowAuthModal(true); // 🔔 แสดงโมดอลถ้ายังไม่ล็อกอิน
+      setShowAuthModal(true);
       return;
     }
-    alert('เดโม: หน้านี้ยังไม่เปิดขายจริง (จำกัดสิทธิ์เฉพาะสมาชิก)');
+    nav('/checkout', {
+      state: {
+        from: `/books/${book._id}`,
+        items: [{ bookId: book._id, title: book.title, price: Number(book.price || 0), qty: 1 }],
+      },
+    });
   };
 
-  const src = `${apiBase()}/books/${book._id}/cover?v=${encodeURIComponent(book.updatedAt || '')}`;
+  // เพิ่มลงตะกร้า (ไม่ต้องล็อกอิน)
+  const addCart = async () => {
+    if (adding) return;
+    setAdding(true);
+    try {
+     const item = {
+        bookId: book._id,
+        title: book.title,
+        price: Number(book.price || 0),
+        qty: 1,
+        coverUrl: `${apiBase()}/books/${book._id}/cover`,
+      };
+      if (user) {
+        await addServerCart([item]);
+      window.dispatchEvent(new Event('mib:cart:update'));          // ✅ ไป MongoDB
+      } else {
+        addToLocalCart([item]);               // ✅ ยังไม่ล็อกอิน → localStorage
+      }
+      if (confirm('เพิ่มลงตะกร้าแล้ว\n\nไปที่ตะกร้าเลยไหม?')) {
+        nav('/cart');
+      }
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const coverSrc = `${apiBase()}/books/${book._id}/cover?v=${encodeURIComponent(book.updatedAt || '')}`;
 
   return (
     <div className="container" style={{ margin: '24px auto', position: 'relative' }}>
       {/* ---------- Book layout ---------- */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 24 }}>
         <img
-          src={src}
+          src={coverSrc}
           alt={book.title}
           style={{ width: '100%', borderRadius: 16 }}
           onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x800?text=No+Cover'; }}
         />
         <div>
-          <div className="badge">{book.category}</div>
+          <div className="badge">{book.category || book.categories?.[0] || 'ทั่วไป'}</div>
           <h1 style={{ margin: '8px 0' }}>{book.title}</h1>
+
           <div style={{ fontSize: 18, fontWeight: 800, margin: '6px 0' }}>
             ราคา: ฿{Number(book.price ?? 0).toLocaleString('th-TH')}
           </div>
+
           <div>ผู้เขียน: {book.authors?.join(', ') || 'ไม่ระบุ'}</div>
           <div>สำนักพิมพ์: {book.publisher || '-'}</div>
           <div>ภาษา: {book.language || '-'}</div>
           <div>จำนวนหน้า: {book.pages || '-'}</div>
           <div>ปีที่พิมพ์: {book.year || '-'}</div>
-          <p style={{ marginTop: 12, whiteSpace: 'pre-wrap' }}>{book.description || '-'}</p>
+
+          <p style={{ marginTop: 12, whiteSpace: 'pre-wrap' }}>
+            {book.description || '-'}
+          </p>
+
           <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-            <button className="btn secondary" onClick={purchase}>สั่งซื้อ (สมาชิกเท่านั้น)</button>
+            <button className="btn secondary" onClick={purchase}>
+              สั่งซื้อ (สมาชิกเท่านั้น)
+            </button>
+            <button className="btn" onClick={addCart} disabled={adding}>
+              {adding ? 'กำลังเพิ่ม…' : 'เพิ่มลงตะกร้า'}
+            </button>
           </div>
         </div>
       </div>
@@ -152,7 +155,6 @@ export default function BookDetail() {
                 animation: 'popIn 180ms ease-out',
               }}
             >
-              {/* Header bar in green-yellow theme */}
               <div
                 style={{
                   background: 'linear-gradient(135deg, #d4fc79, #96e6a1)',
@@ -167,7 +169,6 @@ export default function BookDetail() {
                 </p>
               </div>
 
-              {/* Content */}
               <div style={{ padding: 20 }}>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
                   <div
@@ -192,10 +193,11 @@ export default function BookDetail() {
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 12 }}>
                   <button
-                    onClick={() => nav('/login')}
+                    onClick={() =>
+                      nav('/login', { replace: true, state: { next: '/checkout' } })
+                    }
                     style={{
                       padding: '12px 14px',
                       borderRadius: 10,
@@ -209,7 +211,9 @@ export default function BookDetail() {
                     เข้าสู่ระบบ
                   </button>
                   <button
-                    onClick={() => nav('/register')}
+                    onClick={() =>
+                      nav('/register', { replace: true, state: { next: '/checkout' } })
+                    }
                     style={{
                       padding: '12px 14px',
                       borderRadius: 10,
@@ -224,7 +228,6 @@ export default function BookDetail() {
                   </button>
                 </div>
 
-                {/* Hint + Close */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
                   <span style={{ fontSize: 12, color: '#777' }}>
                     มีบัญชีแล้ว? เข้าสู่ระบบเพื่อสั่งซื้อได้ทันที
@@ -247,12 +250,11 @@ export default function BookDetail() {
             </div>
           </div>
 
-          {/* keyframes */}
           <style>{`
             @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-            @keyframes popIn { 
-              from { opacity: 0; transform: translateY(12px) scale(0.98) } 
-              to { opacity: 1; transform: translateY(8px) scale(1) } 
+            @keyframes popIn {
+              from { opacity: 0; transform: translateY(12px) scale(0.98) }
+              to { opacity: 1; transform: translateY(8px) scale(1) }
             }
           `}</style>
         </>

@@ -1,0 +1,45 @@
+.container{
+  min-height: calc(100vh - 120px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #fafafa;
+}
+.card{
+  width: min(560px, 96vw);
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e8f5e9;
+  box-shadow: 0 16px 40px rgba(0,0,0,.06);
+  padding: 28px 24px;
+  text-align: center;
+}
+.iconWrap{ display: grid; place-items: center; margin-bottom: 8px; }
+.checkIcon{
+  width: 64px; height: 64px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 900; font-size: 30px;
+  color: #fff; background: #2e7d32; box-shadow: 0 10px 24px rgba(46,125,50,.35);
+}
+.title{ margin: 8px 0 0; font-size: 24px; color: #1b5e20; font-weight: 900; }
+.subtitle{ margin: 6px 0 14px; color: #2e7d32; }
+.summary{ margin: 8px auto 14px; display: grid; gap: 8px; text-align: left; max-width: 460px; }
+.row{ display: flex; justify-content: space-between; gap: 10px; color: #37474f; }
+.big{ font-size: 18px; }
+.bold{ font-weight: 800; }
+.addr{ margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e0e0e0; color: #455a64; }
+.addrTitle{ font-weight: 800; color: #1b5e20; margin-bottom: 4px; }
+.error{
+  background: #ffebee; border: 1px solid #ffcdd2; color: #b71c1c;
+  padding: 10px 12px; border-radius: 10px; margin: 8px auto; max-width: 460px; text-align: left;
+}
+.note{ color: #546e7a; }
+.actions{ display: grid; gap: 10px; grid-template-columns: 1fr 1fr; margin-top: 10px; }
+.primary{
+  padding: 12px 16px; border: none; border-radius: 12px;
+  background: #ff5722; color: #fff; font-weight: 800; cursor: pointer;
+}
+.ghost{
+  padding: 12px 16px; border-radius: 12px; border: 1px solid #ccc;
+  background: #fff; color: #555; font-weight: 700; cursor: pointer;
+}
+@media (max-width: 560px){ .actions{ grid-template-columns: 1fr; } }

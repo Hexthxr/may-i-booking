@@ -1,47 +1,8 @@
-// import { useState } from 'react';
-// import api from '../api';
-// import { useAuth } from '../context/AuthContext';
-// import { useNavigate } from 'react-router-dom';
-
-// export default function Login(){
-//   const [usernameOrEmail, setUE] = useState('');
-//   const [password, setPW] = useState('');
-//   const [err, setErr] = useState('');
-//   const { login } = useAuth();
-//   const nav = useNavigate();
-
-//   const onSubmit = async (e)=>{
-//     e.preventDefault();
-//     setErr('');
-//     try {
-//       const res = await api.post('/auth/login', { usernameOrEmail, password });
-//       login(res.data);
-//       nav('/');
-//     } catch (e) {
-//       setErr(e?.response?.data?.message || 'Login failed');
-//     }
-//   };
-
-//   return (
-//     <div className="container" style={{maxWidth:480,margin:'32px auto'}}>
-//       <h2>เข้าสู่ระบบ</h2>
-//       <form onSubmit={onSubmit} className="card" style={{padding:16}}>
-//         {err && <div className="badge" style={{background:'#ffe5e5'}}>⚠️ {err}</div>}
-//         <label>อีเมลหรือชื่อผู้ใช้
-//           <input value={usernameOrEmail} onChange={e=>setUE(e.target.value)} required style={{width:'100%',padding:10,marginTop:6}}/>
-//         </label>
-//         <label style={{marginTop:10}}>รหัสผ่าน
-//           <input type="password" value={password} onChange={e=>setPW(e.target.value)} required style={{width:'100%',padding:10,marginTop:6}}/>
-//         </label>
-//         <button className="btn" style={{marginTop:12}}>เข้าสู่ระบบ</button>
-//       </form>
-//     </div>
-//   )
-// }
 import { useState } from 'react';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; // ⬅️ เพิ่ม useLocation
+import { syncLocalToServerAndClear } from '../utils/cart';
 
 export default function Login() {
   const [usernameOrEmail, setUE] = useState('');
@@ -49,14 +10,30 @@ export default function Login() {
   const [err, setErr] = useState('');
   const { login } = useAuth();
   const nav = useNavigate();
+  const location = useLocation(); // ⬅️ ใช้อ่าน next ที่ส่งมา
+
+  // อ่าน next จาก state หรือจาก query string เป็น fallback
+  const getNextPath = () => {
+    const stateNext = location.state?.next;
+    if (typeof stateNext === 'string') return safeInternalPath(stateNext);
+
+    const sp = new URLSearchParams(location.search);
+    const qNext = sp.get('next');
+    return safeInternalPath(qNext) || '/';
+  };
+
+  // ป้องกัน open redirect: อนุญาตเฉพาะ path ภายในเว็บ (ขึ้นต้นด้วย '/')
+  const safeInternalPath = (p) => (p && /^\/(?!\/)/.test(p) ? p : null);
 
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr('');
     try {
       const res = await api.post('/auth/login', { usernameOrEmail, password });
-      login(res.data);
-      nav('/');
+      login(res.data);  
+      await syncLocalToServerAndClear();                     // เก็บ token/user ตามที่ context คุณทำไว้
+      const next = getNextPath() || '/';     // ถ้าไม่มี next ให้กลับหน้า Home
+      nav(next, { replace: true });          // ⬅️ เด้งไปหน้าที่ตั้งใจ (เช่น /checkout)
     } catch (e) {
       setErr(e?.response?.data?.message || 'Login failed');
     }
@@ -187,5 +164,3 @@ export default function Login() {
     </div>
   );
 }
-
-

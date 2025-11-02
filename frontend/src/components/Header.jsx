@@ -137,15 +137,37 @@
 // }
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import CategoryDrawer from './CategoryDrawer';
 import UserMenu from './UserMenu';
-import SearchBar from './SearchBar'; // ⬅️ เพิ่มบรรทัดนี้
+import SearchBar from './SearchBar';
+
+const CART_KEY = 'mib:cart';
 
 export default function Header(){
   const { user, logout } = useAuth();
   const [openDrawer, setOpenDrawer] = useState(false);
   const isAdmin = user?.role === 'admin';
+
+  // ---------- Cart badge ----------
+  const [cartCount, setCartCount] = useState(0);
+  const countItems = () => {
+    try {
+      const arr = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+      return arr.reduce((s, it) => s + (Number(it.qty) || 1), 0);
+    } catch { return 0; }
+  };
+
+  useEffect(() => {
+    const update = () => setCartCount(countItems());
+    update(); // first paint
+    window.addEventListener('storage', update);          // cross-tab
+    window.addEventListener('mib:cart:update', update);  // same-tab custom event
+    return () => {
+      window.removeEventListener('storage', update);
+      window.removeEventListener('mib:cart:update', update);
+    };
+  }, []);
 
   return (
     <>
@@ -155,7 +177,7 @@ export default function Header(){
       }}>
         <div className="container" style={{
           display:'grid',
-          gridTemplateColumns:'auto 1fr auto', // ⬅️ ช่องกลางให้ยืด
+          gridTemplateColumns:'auto 1fr auto',
           alignItems:'center',
           columnGap:14,
           height:64
@@ -177,6 +199,45 @@ export default function Header(){
           {/* ส่วนขวา */}
           <div style={{display:'flex',alignItems:'center',gap:10, justifySelf:'end'}}>
             <button className="btn secondary" onClick={()=>setOpenDrawer(true)}>หมวดหมู่สินค้า</button>
+
+            {/* 🛒 ปุ่มตะกร้า */}
+            <Link
+              to="/cart"
+              aria-label="ตะกร้าสินค้า"
+              style={{
+                position:'relative',
+                display:'flex',
+                alignItems:'center',
+                gap:8,
+                padding:'9px 14px',
+                borderRadius:12,
+                border:'1px solid #23c55e',
+                background:'#eafff3',
+                color:'#1b5e20',
+                fontWeight:700,
+                textDecoration:'none',
+              }}
+            >
+              <span style={{fontSize:18}}>🛒</span>
+              ตะกร้า
+              {cartCount > 0 && (
+                <span
+                  style={{
+                    position:'absolute',
+                    top:-6,right:-6,
+                    minWidth:20,height:20,padding:'0 6px',
+                    borderRadius:999,
+                    background:'#ff3b30',
+                    color:'#fff',
+                    fontSize:12,
+                    display:'grid',placeItems:'center',
+                    boxShadow:'0 2px 6px rgba(0,0,0,.15)'
+                  }}
+                >
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </Link>
 
             {isAdmin ? (
               <>

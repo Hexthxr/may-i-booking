@@ -21,6 +21,7 @@
 import { Link } from 'react-router-dom';
 import { apiBase } from '../api';
 
+
 export default function BookCard({ book }) {
   const src = `${apiBase()}/books/${book._id}/cover?v=${encodeURIComponent(book.updatedAt || '')}`;
   return (

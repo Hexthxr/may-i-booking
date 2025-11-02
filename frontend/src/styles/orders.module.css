@@ -1,0 +1,104 @@
+/* frontend/src/styles/orders.module.css */
+.container{ max-width: 1040px; margin: 24px auto; padding: 0 16px 40px; }
+.header{ display:flex; align-items:center; gap:12px; margin-bottom: 8px; }
+.title{ color:#1b5e20; margin:0; }
+.tools{ margin-left:auto; display:flex; gap:8px; align-items:center; }
+.select, .input{ padding:10px 12px; border:1px solid #cfd8dc; border-radius:10px; outline:none; }
+.input{ min-width: 240px; }
+.list{ display:grid; gap:10px; }
+.card{ background:#fff; border:1px solid #e8f5e9; border-radius:12px; padding:12px; box-shadow:0 8px 18px rgba(0,0,0,.04); cursor:pointer; }
+.rowTop{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.left{ display:grid; gap:4px; }
+.orderId{ font-weight:800; }
+.date{ color:#546e7a; font-size:13px; }
+.right{ display:flex; align-items:center; gap:12px; }
+.badge{ padding:4px 10px; border-radius:999px; font-size:12px; font-weight:800; border:1px solid transparent; }
+.st_pending{ background:#fff3e0; color:#e65100; border-color:#ffe0b2; }
+.st_paid{ background:#e3f2fd; color:#1565c0; border-color:#bbdefb; }
+.st_shipped{ background:#ede7f6; color:#4527a0; border-color:#d1c4e9; }
+.st_completed{ background:#e8f5e9; color:#1b5e20; border-color:#c8e6c9; }
+.st_canceled{ background:#ffebee; color:#b71c1c; border-color:#ffcdd2; }
+.total{ font-weight:900; font-size:18px; }
+
+.items{ display:grid; gap:8px; margin-top:10px; }
+.item{ display:grid; grid-template-columns: 56px 1fr; gap:10px; align-items:center; }
+.cover{ width:56px; height:72px; object-fit:cover; border-radius:8px; background:#f3f3f3; }
+.meta{ min-width:0; }
+.name{ font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.qtyPrice{ color:#666; font-size:13px; }
+.more{ color:#666; font-style:italic; }
+
+.pager{ display:flex; align-items:center; justify-content:center; gap:12px; margin-top:16px; }
+.btn, .btnLink{ padding:10px 14px; border-radius:12px; border:1px solid #ccc; background:#fff; color:#333; cursor:pointer; }
+.btnLink{ border-color:#ff9800; color:#e65100; background:#fff8e1; font-weight:800; }
+.note{ color:#455a64; }
+.error{ background:#ffebee; border:1px solid #ffcdd2; color:#b71c1c; padding:8px 10px; border-radius:8px; }
+.empty{ display:flex; align-items:center; gap:8px; }
+
+/* Detail */
+.detailCard{ background:#fff; border:1px solid #e8f5e9; border-radius:12px; padding:14px; box-shadow:0 8px 18px rgba(0,0,0,.04); }
+.detailTop{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+.detailLeft{ display:grid; gap:6px; }
+.rowLine{ display:flex; justify-content:space-between; gap:10px; }
+.totalLine{ font-weight:900; font-size:18px; }
+.detailRight{ border-left:1px dashed #e0e0e0; padding-left:12px; color:#455a64; }
+.addrTitle{ font-weight:800; color:#1b5e20; margin-bottom:4px; }
+.sectionTitle{ font-weight:800; margin:12px 0 8px; color:#1b5e20; }
+.detailItems{ display:grid; gap:10px; }
+.detailItemRow{ display:grid; grid-template-columns: 56px 1fr auto auto; gap:10px; align-items:center; }
+.itemMain{ min-width:0; }
+.dim{ color:#666; font-size:13px; }
+.linePrice{ text-align:right; color:#455a64; }
+.lineTotal{ text-align:right; font-weight:800; }
+
+@media (max-width: 860px){
+  .detailTop{ grid-template-columns: 1fr; }
+  .detailRight{ border-left:none; padding-left:0; border-top:1px dashed #e0e0e0; padding-top:8px; }
+}
+
+/* Tabs */
+.tabs{
+  display:flex; gap:8px; margin: 8px 0 14px;
+  overflow:auto; padding-bottom:2px;
+}
+.tab{
+  padding:8px 12px;
+  border:1px solid #cfd8dc;
+  background:#fff;
+  border-radius:999px;
+  font-weight:700;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.tabActive{
+  background:#e8f5e9;
+  border-color:#a5d6a7;
+  color:#1b5e20;
+}
+/* Actions & Tracking & Toast */
+.actionsRow{
+  display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;
+}
+.btnPrimary{
+  padding:10px 14px; border:none; border-radius:12px; background:#ff5722; color:#fff; font-weight:800; cursor:pointer;
+}
+.btnGhost{
+  padding:10px 14px; border-radius:12px; border:1px solid #ccc; background:#fff; color:#555; font-weight:700; cursor:pointer;
+}
+.btnDanger{
+  padding:10px 14px; border-radius:12px; border:1px solid #f44336; background:#ffebee; color:#c62828; font-weight:800; cursor:pointer;
+}
+.btnTiny{
+  padding:6px 10px; border-radius:10px; border:1px solid #ccc; background:#fff; color:#333; cursor:pointer; font-size:12px;
+}
+.trackingBox{
+  margin-top:8px; padding:10px; border:1px dashed #c8e6c9; border-radius:10px; background:#f9fff9;
+}
+.trackingRow{ display:flex; justify-content:space-between; gap:10px; }
+.trackingActions{ display:flex; gap:8px; margin-top:6px; }
+.bold{ font-weight:800; }
+.toast{
+  margin: 8px 0;
+  background:#e3f2fd; border:1px solid #bbdefb; color:#0d47a1;
+  padding:8px 10px; border-radius:8px;
+}

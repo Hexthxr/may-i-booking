@@ -79,6 +79,11 @@ export default function UserMenu({ onLogout }) {
             <Link to="/account" className="um-item" onClick={close}><span className="um-ico">👤</span><span className="um-text">โปรไฟล์</span><span className="um-chevron">›</span></Link>
             <Link to="/settings" className="um-item" onClick={close}><span className="um-ico">⚙️</span><span className="um-text">การตั้งค่า</span><span className="um-chevron">›</span></Link>
             <Link to="/account/address" className="um-item" onClick={close}><span className="um-ico">📦</span><span className="um-text">ที่อยู่จัดส่ง</span><span className="um-chevron">›</span></Link>
+             <Link to="/orders" className="um-item" onClick={close}>
+    <span className="um-ico">🧾</span>
+    <span className="um-text">ประวัติการสั่งซื้อ</span>
+    <span className="um-chevron">›</span>
+  </Link>
             <Link to="/favorites" className="um-item" onClick={close}><span className="um-ico">💚</span><span className="um-text">ความชื่นชอบ</span><span className="um-chevron">›</span></Link>
           </div>
 

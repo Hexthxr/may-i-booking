@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';   // ✅ เพิ่ม
 import api from '../api';
 import styles from '../styles/addressbook.module.css';
 
@@ -16,18 +17,39 @@ export default function AddressBook(){
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState(null); // id ที่จะลบ
 
+  // ✅ รองรับกลับไปหน้าเดิม (เช่น /checkout)
+  const nav = useNavigate();
+  const location = useLocation();
+  const backTo =
+    location.state?.backTo ||
+    new URLSearchParams(location.search).get('backTo') ||
+    null;
+
   const load = async ()=>{
     setLoading(true);
     try{
       const { data } = await api.get('/addresses');
-      setItems(data.items);
+      const arr = data.items || data || [];
+      setItems(arr);
+
+      // ✅ ถ้ามาจาก Checkout และยังไม่มีที่อยู่เลย → เปิดฟอร์มสร้างให้ทันที
+      if (backTo && (arr?.length || 0) === 0 && !editing) {
+        setEditing({ ...empty, isDefault: true });
+      }
     } finally { setLoading(false); }
   };
-  useEffect(()=>{ load(); },[]);
+  useEffect(()=>{ load(); /* eslint-disable-next-line */ },[]);
 
   const onCreate = ()=> setEditing({ ...empty, isDefault: items.length === 0 }); // ที่อยู่อันแรก set default ให้เลย
   const onEdit = (it)=> setEditing({ ...it });
   const onCancel = ()=> setEditing(null);
+
+  // ✅ helper: หลังทำรายการเสร็จ ถ้ามี backTo → กลับ
+  const goBackIfNeeded = ()=>{
+    if (backTo) {
+      nav(backTo, { replace: true, state: { fromAddresses: true } });
+    }
+  };
 
   const onSave = async ()=>{
     setSaving(true);
@@ -36,15 +58,18 @@ export default function AddressBook(){
       if (payload._id) {
         const { data } = await api.patch(`/addresses/${payload._id}`, payload);
         setEditing(null);
-        // แทนที่รายการ
         setItems(prev => prev.map(x => x._id === data.item._id ? data.item : x));
         // ถ้ากลายเป็น default อันอื่นต้องไม่ default → รีโหลดชัวร์ ๆ
         if (data.item.isDefault) await load();
+        // ✅ ถ้ามาจาก Checkout → กลับไป
+        goBackIfNeeded();
       } else {
         const { data } = await api.post('/addresses', payload);
         setEditing(null);
         setItems(prev => [data.item, ...prev]);
         if (data.item.isDefault) await load();
+        // ✅ ถ้ามาจาก Checkout → กลับไป
+        goBackIfNeeded();
       }
     } finally { setSaving(false); }
   };
@@ -58,13 +83,28 @@ export default function AddressBook(){
   const setDefault = async (id)=>{
     await api.patch(`/addresses/${id}/default`);
     await load();
+    // ✅ ตั้งค่า default เสร็จแล้ว ถ้าเข้าจาก Checkout → กลับไปทันที
+    goBackIfNeeded();
   };
 
   return (
     <div className={styles.wrap}>
       <div className={styles.head}>
         <h1 className={styles.title}>ที่อยู่จัดส่ง</h1>
-        {!editing && <button className={styles.btnPrimary} onClick={onCreate}>+ เพิ่มที่อยู่</button>}
+
+        <div style={{display:'flex', gap:8}}>
+          {/* ✅ ปุ่มกลับหน้า Checkout ถ้ามี backTo */}
+          {backTo && !editing && (
+            <button
+              className={styles.btnGhost}
+              onClick={()=> nav(backTo, { replace:true, state:{ fromAddresses:true } })}
+              title="กลับไปชำระเงิน"
+            >
+              ← กลับไปชำระเงิน
+            </button>
+          )}
+          {!editing && <button className={styles.btnPrimary} onClick={onCreate}>+ เพิ่มที่อยู่</button>}
+        </div>
       </div>
 
       {/* ฟอร์มเพิ่ม/แก้ไข */}
