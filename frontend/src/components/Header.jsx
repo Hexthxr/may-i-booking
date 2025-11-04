@@ -135,12 +135,14 @@
 //     </>
 //   );
 // }
+// frontend/src/components/Header.jsx
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useEffect, useState } from 'react';
 import CategoryDrawer from './CategoryDrawer';
 import UserMenu from './UserMenu';
 import SearchBar from './SearchBar';
+import NotificationBell from './NotificationBell'; // ⬅️ เพิ่มกระดิ่ง
 
 const CART_KEY = 'mib:cart';
 
@@ -198,7 +200,11 @@ export default function Header(){
 
           {/* ส่วนขวา */}
           <div style={{display:'flex',alignItems:'center',gap:10, justifySelf:'end'}}>
-            <button className="btn secondary" onClick={()=>setOpenDrawer(true)}>หมวดหมู่สินค้า</button>
+            {/* ปุ่มหมวดหมู่ + กระดิ่งถัดกัน */}
+            <div style={{display:'flex', alignItems:'center', gap:8}}>
+              <button className="btn secondary" onClick={()=>setOpenDrawer(true)}>หมวดหมู่สินค้า</button>
+              <NotificationBell /> {/* ⬅️ กระดิ่งจะแสดง badge เมื่อมีการจอง */}
+            </div>
 
             {/* 🛒 ปุ่มตะกร้า */}
             <Link
