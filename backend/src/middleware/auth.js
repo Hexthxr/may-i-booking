@@ -1,16 +1,22 @@
+// backend/src/middleware/auth.js
 import jwt from 'jsonwebtoken';
 
-export function requireAuth(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+export function authRequired(req, res, next) {
+  const authHeader = req.headers.authorization || '';
+  if (!authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.slice(7).trim();
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev_secret');
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch {
     return res.status(401).json({ message: 'Invalid token' });
   }
 }
+
+// กันพลาด: alias
+export const requireAuth = authRequired;
+export default authRequired;
+

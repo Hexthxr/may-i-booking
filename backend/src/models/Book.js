@@ -44,9 +44,15 @@ const BookSchema = new mongoose.Schema({
   year: { type: Number, default: 2025 },
   category: { type: String, enum: ALLOWED_CATEGORIES, required: true },
   price: { type: Number, required: true, min: 0, default: 0 },
-  // ---- NEW: stock fields ----
+
+  // ---- สต๊อกสินค้า ----
   stock: { type: Number, min: 0, default: 0 },
-  isPreorder: { type: Boolean, default: false }
+  isPreorder: { type: Boolean, default: false },
+
+  // ---- สถิติรีวิว/เรตติ้ง ----
+  avgRating: { type: Number, default: 0 },   // ค่าเฉลี่ย 0–5 (คำนวณจาก Review)
+  ratingCount: { type: Number, default: 0 }, // จำนวนรีวิวทั้งหมด
 }, { timestamps: true });
 
 export const Book = mongoose.model('Book', BookSchema);
+
