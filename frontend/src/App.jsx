@@ -25,7 +25,8 @@ import AdminBookForm from './pages/AdminBookForm';
 
 import ProtectedRoute from './components/ProtectedRoute';
 
-import SearchResults from './pages/SearchResults';     // ✅ import ครั้งเดียว
+import SearchResults from './pages/SearchResults';  
+import Payment from './pages/Payment';   // ✅ import ครั้งเดียว
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="/search" element={<SearchResults />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/payment" element={<Payment />} />  {/* ✅ เพิ่มบรรทัดนี้ */}
 
         {/* Book detail: ใช้เส้นทางเดียวให้ชัดเจน */}
         <Route path="/books/:id" element={<BookDetail />} />

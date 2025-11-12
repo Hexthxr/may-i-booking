@@ -8,10 +8,6 @@ import styles from '../styles/checkout.module.css';
 const FallbackImg =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
 
-function copy(text){
-  try{ navigator.clipboard.writeText(String(text)); alert('คัดลอกแล้ว'); }catch(_){ /* ignore */ }
-}
-
 export default function Checkout(){
   const nav = useNavigate();
   const location = useLocation();
@@ -25,14 +21,6 @@ export default function Checkout(){
   const [placing, setPlacing] = useState(false);
   const [notice, setNotice] = useState('');
 
-  // slip
-  const [slipFile, setSlipFile] = useState(null);
-  const [slipPreview, setSlipPreview] = useState('');
-  const [dragOver, setDragOver] = useState(false);
-
-  // transfer helper
-  const [expirySec, setExpirySec] = useState(15 * 60); // 15 นาที
-
   // reorder selection flag
   const appliedSelectionRef = useRef(false);
 
@@ -42,7 +30,7 @@ export default function Checkout(){
     }
   }, [isLoggedIn, nav]);
 
-  // load list
+  // load list (จาก state หรือจาก /cart)
   useEffect(()=>{
     const fromState = location?.state?.items;
     if (Array.isArray(fromState) && fromState.length){
@@ -74,7 +62,7 @@ export default function Checkout(){
     })();
   }, []);
 
-  // reorder filter
+  // apply selection (reorder)
   useEffect(()=>{
     const sp = new URLSearchParams(location.search || '');
     const fromReorder = sp.get('from') === 'reorder';
@@ -103,19 +91,6 @@ export default function Checkout(){
     }
   }, [location.search, items, nav]);
 
-  // countdown for transfer
-  useEffect(()=>{
-    if (payment !== 'TRANSFER') return;
-    setExpirySec(15*60);
-  }, [payment]);
-
-  useEffect(()=>{
-    if (payment !== 'TRANSFER') return;
-    if (expirySec <= 0) return;
-    const t = setInterval(()=> setExpirySec(s => s - 1), 1000);
-    return ()=> clearInterval(t);
-  }, [payment, expirySec]);
-
   const normalizeItems = (rawArr)=> (rawArr||[]).map(it=>{
     const b = it.book || {};
     const rawId = it.bookId || b._id || it._id;
@@ -135,39 +110,32 @@ export default function Checkout(){
     return { subtotal, shipping, discount, total };
   }, [items]);
 
-  const amount = summary.total; // เอาไว้โชว์/คัดลอกบนกล่องโอน
-  const payeeName = 'May i Booking Co., Ltd.';
-  const promptPayId = '08X-XXX-XXXX'; // <- เปลี่ยนเป็นเลขพร้อมเพย์ของจริง
-  const qrUrl = `${apiBase()}/static/qr-demo.png`; // <- ถ้ามี endpoint QR จริงให้เปลี่ยน
+  // >>> ไปหน้า Payment พร้อมข้อมูลที่ต้องใช้ในการสร้างออร์เดอร์ TRANSFER
+  const goPayment = ()=>{
+    if (!items.length) return setNotice('ไม่มีสินค้าในรายการชำระเงิน');
+    if (!selectedAddrId) return setNotice('กรุณาเลือกที่อยู่จัดส่ง');
 
-  // pick slip
-  const acceptFile = (f)=>{
-    if(!f) return false;
-    if(!f.type?.startsWith('image/')){ setNotice('ไฟล์สลิปต้องเป็นรูปภาพ'); return false; }
-    if(f.size > 8 * 1024 * 1024){ setNotice('ไฟล์สลิปต้องไม่เกิน 8MB'); return false; }
-    setSlipFile(f);
-    setSlipPreview(URL.createObjectURL(f));
-    return true;
-  };
-  const onPickSlip = (e)=> acceptFile(e.target.files?.[0]);
-
-  // drag & drop
-  const onDrop = (e)=>{
-    e.preventDefault();
-    setDragOver(false);
-    const f = e.dataTransfer.files?.[0];
-    acceptFile(f);
+    const payload = {
+      amount: Number(summary?.total || 0),
+      ref: `ORDER-${Date.now().toString().slice(-6)}`,
+      from: '/checkout',
+      items,                 // ส่งรายการสินค้า (bookId, qty, price, coverUrl, title)
+      addressId: selectedAddrId,
+      summary
+    };
+    try {
+      sessionStorage.setItem('mib:pay', JSON.stringify(payload)); // กันรีเฟรช
+    } catch {}
+    nav('/payment', { state: payload });
   };
 
   const placeOrder = async ()=>{
     if (!items.length) return setNotice('ไม่มีสินค้าในรายการชำระเงิน');
     if (!selectedAddrId) return setNotice('กรุณาเลือกที่อยู่จัดส่ง');
 
-    const addrObj = addresses.find(a => String(a._id) === String(selectedAddrId));
-    if (!addrObj) return setNotice('ไม่พบข้อมูลที่อยู่ที่เลือก');
-
-    if (payment === 'TRANSFER' && !slipFile){
-      return setNotice('กรุณาแนบสลิปการโอนเงินก่อนยืนยัน');
+    // ถ้าเลือกโอน/พร้อมเพย์ ให้ไปหน้าชำระเงินก่อน (ไม่สั่งซื้อในหน้านี้)
+    if (payment === 'TRANSFER') {
+      return goPayment();
     }
 
     setPlacing(true); setNotice('');
@@ -178,29 +146,6 @@ export default function Checkout(){
         price: Number.isFinite(Number(it.price)) ? Number(it.price) : undefined,
       }));
 
-      if (payment === 'TRANSFER'){
-        const fd = new FormData();
-        fd.append('paymentMethod', 'TRANSFER');
-        fd.append('addressId', selectedAddrId);
-        fd.append('items', JSON.stringify(normItems));
-        fd.append('summary', JSON.stringify(summary));
-        fd.append('slip', slipFile);
-
-        await api.post('/orders', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-
-        // clear purchased items
-        try{
-          const params = new URLSearchParams();
-          items.forEach(it => params.append('ids', it.bookId));
-          await api.delete(`/cart/items?${params.toString()}`);
-        }catch(eDel){
-          try{ await api.post('/cart/clear', { ids: items.map(it => it.bookId) }); }catch(_){}
-        }
-
-        alert('อัปโหลดสลิปเรียบร้อย! ระบบจะตรวจสอบและยืนยันคำสั่งซื้อ');
-        return nav('/orders?status=TO_SHIP', { replace: true });
-      }
-
       // COD
       try{
         await api.post('/orders', {
@@ -209,16 +154,18 @@ export default function Checkout(){
           paymentMethod: 'COD',
         });
       }catch(err1){
-        const shippingAddress = {
-          fullName: addrObj.fullName || '',
-          phone: addrObj.phone || '',
-          line1: addrObj.line1 || '',
-          line2: addrObj.line2 || '',
-          subdistrict: addrObj.subdistrict || '',
-          district: addrObj.district || '',
-          province: addrObj.province || '',
-          postcode: addrObj.postcode || '',
-        };
+        const a = addresses.find(x => String(x._id) === String(selectedAddrId));
+        const shippingAddress = a ? {
+          fullName: a.fullName || '',
+          phone: a.phone || '',
+          line1: a.line1 || '',
+          line2: a.line2 || '',
+          subdistrict: a.subdistrict || '',
+          district: a.district || '',
+          province: a.province || '',
+          postcode: a.postcode || '',
+        } : undefined;
+
         await api.post('/orders', {
           items: normItems,
           paymentMethod: 'COD',
@@ -227,12 +174,13 @@ export default function Checkout(){
         });
       }
 
+      // ล้างของในตะกร้าที่ซื้อแล้ว
       try{
         const params = new URLSearchParams();
         items.forEach(it => params.append('ids', it.bookId));
         await api.delete(`/cart/items?${params.toString()}`);
-      }catch(eDel){
-        try{ await api.post('/cart/clear', { ids: items.map(it => it.bookId) }); }catch(_){}
+      }catch(_){
+        try{ await api.post('/cart/clear', { ids: items.map(it => it.bookId) }); }catch(__){}
       }
 
       alert('สั่งซื้อสำเร็จ!');
@@ -247,13 +195,6 @@ export default function Checkout(){
     }
   };
 
-  // helper นับถอยหลัง mm:ss
-  const mmss = (sec)=> {
-    const m = Math.max(0, Math.floor(sec/60)).toString().padStart(2,'0');
-    const s = Math.max(0, sec%60).toString().padStart(2,'0');
-    return `${m}:${s}`;
-  };
-
   return (
     <div className={styles.container}>
       <div className={styles.headerBar}>
@@ -266,7 +207,7 @@ export default function Checkout(){
       </div>
 
       <h2 className={styles.title}>ชำระเงิน</h2>
-      <p className={styles.subtitle}>เลือกที่อยู่ ตรวจสอบรายการ และอัปโหลดสลิปเมื่อเลือกโอน</p>
+      <p className={styles.subtitle}>เลือกที่อยู่ ตรวจสอบรายการ และเลือกวิธีชำระเงิน</p>
       {notice ? <div className={`${styles.card} ${styles.notice}`}>{notice}</div> : null}
 
       <div className={styles.twoCol}>
@@ -363,87 +304,36 @@ export default function Checkout(){
             <div className={styles.cardHeader}><div className={styles.sectionTitle}>วิธีชำระเงิน</div></div>
             <div className={styles.payMethod}>
               <label className={styles.inline}>
-                <input type="radio" name="pay" value="COD" checked={payment==='COD'} onChange={()=>setPayment('COD')} />
+                <input
+                  type="radio"
+                  name="pay"
+                  value="COD"
+                  checked={payment==='COD'}
+                  onChange={()=>setPayment('COD')}
+                />
                 ชำระปลายทาง (COD)
               </label>
               <label className={styles.inline}>
-                <input type="radio" name="pay" value="TRANSFER" checked={payment==='TRANSFER'} onChange={()=>setPayment('TRANSFER')} />
+                <input
+                  type="radio"
+                  name="pay"
+                  value="TRANSFER"
+                  checked={payment==='TRANSFER'}
+                  onChange={()=>setPayment('TRANSFER')}
+                />
                 โอน/พร้อมเพย์
               </label>
             </div>
 
-            {/* TRANSFER Panel */}
+            {/* เมื่อเลือกโอน/พร้อมเพย์ แสดงปุ่มไปหน้าชำระเงิน */}
             {payment === 'TRANSFER' && (
-              <div style={{marginTop:10, display:'grid', gap:12}}>
-                {/* Pay Box */}
-                <div
-                  style={{
-                    border:'1px solid #e6e6e6',
-                    borderRadius:12,
-                    padding:12,
-                    display:'grid',
-                    gridTemplateColumns:'120px 1fr',
-                    gap:12,
-                    alignItems:'center',
-                    background:'#fafafa'
-                  }}
-                >
-                  <img
-                    src={"https://media.discordapp.net/attachments/1405142806254714962/1435241356221223014/IMG_3057.jpg?ex=690b402c&is=6909eeac&hm=aacebc8678a9b62ff068f12f08ab5ac2162cfccccd904c33e3105e758066e6c0&=&format=webp&width=686&height=930"}
-                    alt="QR พร้อมเพย์"
-                    style={{width:120, height:120, objectFit:'cover', borderRadius:8, border:'1px solid #eee'}}
-                    onError={(e)=>{ e.currentTarget.src = FallbackImg; }}
-                  />
-                  <div style={{display:'grid', gap:6}}>
-                    <div style={{fontWeight:700}}>โอน/พร้อมเพย์</div>
-                    <div style={{opacity:.8}}>{payeeName}</div>
-                    <div style={{display:'flex', gap:8, alignItems:'center', flexWrap:'wrap'}}>
-                      <span>พร้อมเพย์:</span>
-                      <code style={{background:'#fff', padding:'2px 6px', borderRadius:6, border:'1px solid #eee'}}>{promptPayId}</code>
-                      <button className={styles.secondaryBtn} onClick={()=>copy(promptPayId)}>คัดลอก</button>
-                    </div>
-                    <div style={{display:'flex', gap:8, alignItems:'center', flexWrap:'wrap'}}>
-                      <span>จำนวนเงิน:</span>
-                      <code style={{background:'#fff', padding:'2px 6px', borderRadius:6, border:'1px solid #eee'}}>฿{amount.toLocaleString('th-TH')}</code>
-                      <button className={styles.secondaryBtn} onClick={()=>copy(amount)}>คัดลอก</button>
-                    </div>
-                    <div style={{display:'flex', gap:8, alignItems:'center', marginTop:4}}>
-                      <span style={{fontSize:12, opacity:.75}}>เวลาที่เหลือในการชำระ:</span>
-                      <strong style={{fontSize:12, color:'#d84315'}}>{mmss(expirySec)}</strong>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Slip Dropzone */}
-                <div
-                  onDragOver={(e)=>{ e.preventDefault(); setDragOver(true); }}
-                  onDragLeave={()=> setDragOver(false)}
-                  onDrop={onDrop}
-                  style={{
-                    border: dragOver ? '2px dashed #2e7d32' : '2px dashed #ddd',
-                    background: dragOver ? 'rgba(46,125,50,0.05)' : 'transparent',
-                    borderRadius:12,
-                    padding:16,
-                    textAlign:'center'
-                  }}
-                >
-                  <div style={{fontWeight:600, marginBottom:6}}>แนบสลิปการโอน</div>
-                  <div style={{fontSize:13, opacity:.75, marginBottom:10}}>ลากรูปมาวางที่นี่ หรือกดปุ่มเพื่อเลือกไฟล์ (สูงสุด 8MB)</div>
-                  <input type="file" accept="image/*" onChange={onPickSlip} />
-                  {slipPreview && (
-                    <img
-                      src={slipPreview}
-                      alt="สลิปที่เลือก"
-                      style={{ width:'100%', marginTop:10, borderRadius:12, border:'1px solid #eee' }}
-                    />
-                  )}
-                </div>
-
-                {/* Tips */}
-                <ul style={{margin:'2px 0 0 18px', padding:0, fontSize:12, opacity:.7}}>
-                  <li>หลังอัปโหลดสลิปแล้ว ทีมงานจะตรวจสอบและยืนยันคำสั่งซื้อ</li>
-                  <li>หากหมดเวลา โปรดสร้างคำสั่งซื้อใหม่เพื่อความถูกต้องของยอด</li>
-                </ul>
+              <div style={{marginTop:10, display:'grid', gap:8}}>
+                <button className={styles.buyBtn} onClick={goPayment}>
+                  ไปหน้าชำระเงิน (พร้อมเพย์ QR)
+                </button>
+                <small className={styles.note}>
+                  สแกนและชำระในหน้าถัดไป แล้วแนบสลิปเพื่อยืนยัน
+                </small>
               </div>
             )}
           </div>
@@ -460,7 +350,7 @@ export default function Checkout(){
             </div>
             <div className={styles.actionCol}>
               <button disabled={placing} onClick={placeOrder} className={styles.buyBtn}>
-                {placing ? 'กำลังยืนยันคำสั่งซื้อ…' : (payment==='TRANSFER' ? 'อัปโหลดสลิป & ยืนยัน' : 'ยืนยันคำสั่งซื้อ')}
+                {placing ? 'กำลังยืนยันคำสั่งซื้อ…' : (payment==='TRANSFER' ? 'ไปหน้าชำระเงิน' : 'ยืนยันคำสั่งซื้อ')}
               </button>
               <button onClick={()=>nav('/cart')} className={styles.secondaryBtn}>ย้อนกลับตะกร้า</button>
             </div>
