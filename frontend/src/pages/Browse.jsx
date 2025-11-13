@@ -38,10 +38,13 @@
 //   )
 // }
 
+// (โค้ดเก่าแบบมี sidebar ถูกคอมเมนต์ไว้อยู่ด้านบน ให้คงไว้ได้เลย)
+
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api';
 import BookCard from '../components/BookCard';
+import CategoryScroller from '../components/CategoryScroller';
 
 export default function Browse(){
   const { name } = useParams();
@@ -51,21 +54,36 @@ export default function Browse(){
   useEffect(()=>{
     setLoading(true);
     (async ()=>{
-      const res = await api.get('/books', { params: { category: name, limit: 200 }});
-      setItems(res.data);
-      setLoading(false);
+      try{
+        const params = { limit: 200 };
+
+        // ถ้าเป็น "ทั้งหมด" หรือไม่มี name -> ดึงทุกหมวด (ไม่ส่ง category)
+        if (name && name !== 'ทั้งหมด') {
+          params.category = name;
+        }
+
+        const res = await api.get('/books', { params });
+        setItems(res.data);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [name]);
 
   return (
-    <div className="container" style={{margin:'18px auto'}}>
-      <h2 style={{margin:'6px 0 12px 0'}}>หมวด: {name}</h2>
-      {loading ? <div>กำลังโหลด...</div> : (
-        <div className="grid">
-          {items.map(b => <BookCard key={b._id} book={b} />)}
-          {items.length === 0 && <div>ยังไม่มีหนังสือในหมวดนี้</div>}
-        </div>
-      )}
-    </div>
+    <>
+      {/* แถบเลื่อนหมวด + ปุ่มหนังสือทั้งหมด ด้านบน */}
+      <CategoryScroller />
+
+      <div className="container" style={{margin:'18px auto'}}>
+        <h2 style={{margin:'6px 0 12px 0'}}>หมวด: {name || 'ทั้งหมด'}</h2>
+        {loading ? <div>กำลังโหลด...</div> : (
+          <div className="grid">
+            {items.map(b => <BookCard key={b._id} book={b} />)}
+            {items.length === 0 && <div>ยังไม่มีหนังสือในหมวดนี้</div>}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

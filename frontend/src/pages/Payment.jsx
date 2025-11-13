@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import PromptPayQR from "../components/PromptPayQR";
-import api, { apiBase } from "../api";
+import api from "../api";
 import styles from "../styles/checkout.module.css";
 
 const PROMPTPAY_ID = "0812345678";        // TODO: ใส่พร้อมเพย์จริง
@@ -52,7 +52,11 @@ export default function Payment() {
     return true;
   };
   const onPickSlip = (e) => acceptFile(e.target.files?.[0]);
-  const onDrop = (e) => { e.preventDefault(); setDragOver(false); acceptFile(e.dataTransfer.files?.[0]); };
+  const onDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    acceptFile(e.dataTransfer.files?.[0]);
+  };
 
   // ▶️ สร้างออร์เดอร์แบบ TRANSFER + แนบสลิป (ใช้ endpoint เดิม /orders)
   const confirmPayment = async () => {
@@ -66,9 +70,16 @@ export default function Payment() {
       const fd = new FormData();
       fd.append("paymentMethod", "TRANSFER");
       fd.append("addressId", payload.addressId);
-      fd.append("items", JSON.stringify(
-        payload.items.map(it => ({ bookId: it.bookId, qty: Number(it.qty||1), price: Number(it.price||0) }))
-      ));
+      fd.append(
+        "items",
+        JSON.stringify(
+          payload.items.map(it => ({
+            bookId: it.bookId,
+            qty: Number(it.qty || 1),
+            price: Number(it.price || 0),
+          }))
+        )
+      );
       if (payload.summary) fd.append("summary", JSON.stringify(payload.summary));
       fd.append("slip", slipFile);
       fd.append("refCode", refCode);
@@ -117,8 +128,13 @@ export default function Payment() {
         <div className={styles.leftCol}>
           <div className={styles.card}>
             <div className={styles.sectionTitle}>QR พร้อมเพย์</div>
-            <PromptPayQR id={PROMPTPAY_ID} amount={amount} merchantName={MERCHANT_NAME} ref1={refCode} />
-            <div style={{textAlign:'center', fontSize:12, opacity:.7, marginTop:-6}}>
+            <PromptPayQR
+              id={PROMPTPAY_ID}
+              amount={amount}
+              merchantName={MERCHANT_NAME}
+              ref1={refCode}
+            />
+            <div style={{ textAlign: "center", fontSize: 12, opacity: 0.7, marginTop: -6 }}>
               Ref: {refCode}
             </div>
           </div>
@@ -128,28 +144,72 @@ export default function Payment() {
         <div className={styles.rightCol}>
           <div className={styles.card}>
             <div className={styles.sectionTitle}>แนบสลิปการชำระเงิน</div>
+
             <div
-              onDragOver={(e)=>{ e.preventDefault(); setDragOver(true); }}
-              onDragLeave={()=> setDragOver(false)}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
               onDrop={onDrop}
               style={{
                 border: dragOver ? "2px dashed #23c55e" : "2px dashed #ddd",
                 background: dragOver ? "rgba(35,197,94,0.05)" : "transparent",
-                borderRadius: 12, padding: 16, textAlign: "center"
+                borderRadius: 12,
+                padding: 16,
+                textAlign: "center",
               }}
             >
-              <div style={{ fontWeight: 600, marginBottom: 6 }}>อัปโหลดสลิป (สูงสุด 8MB)</div>
-              <input type="file" accept="image/*" onChange={onPickSlip} />
+              <div style={{ fontWeight: 600, marginBottom: 6 }}>
+                อัปโหลดสลิป (สูงสุด 8MB)
+              </div>
+
+              {/* ปุ่มอัปโหลดสวย ๆ */}
+              <div className={styles.uploadWrapper}>
+                <input
+                  id="slipFile"
+                  type="file"
+                  accept="image/*"
+                  className={styles.realFileInput}
+                  onChange={onPickSlip}
+                />
+
+                <label htmlFor="slipFile" className={styles.prettyUploadBtn}>
+                  📤 เลือกไฟล์สลิป
+                </label>
+
+                <span className={styles.fileLabel}>
+                  {slipFile ? slipFile.name : "ยังไม่ได้เลือกไฟล์"}
+                </span>
+              </div>
+
+              <div style={{ fontSize: 12, color: "#607d8b", marginTop: 6 }}>
+                หรือ ลากไฟล์สลิปมาวางในกรอบนี้
+              </div>
+
               {slipPreview && (
-                <img src={slipPreview} alt="สลิป" style={{ width:"100%", marginTop:10, borderRadius:12, border:"1px solid #eee" }} />
+                <img
+                  src={slipPreview}
+                  alt="สลิป"
+                  style={{
+                    width: "100%",
+                    marginTop: 10,
+                    borderRadius: 12,
+                    border: "1px solid #eee",
+                  }}
+                />
               )}
             </div>
 
             <div className={styles.actionCol} style={{ marginTop: 20 }}>
-              <button className={styles.buyBtn} disabled={uploading} onClick={confirmPayment}>
+              <button
+                className={styles.buyBtn}
+                disabled={uploading}
+                onClick={confirmPayment}
+              >
                 {uploading ? "กำลังอัปโหลด..." : "ยืนยันการชำระเงิน"}
               </button>
-              <button onClick={()=> nav("/checkout")} className={styles.secondaryBtn}>
+              <button
+                onClick={() => nav("/checkout")}
+                className={styles.secondaryBtn}
+              >
                 กลับไปหน้า Checkout
               </button>
             </div>
@@ -158,9 +218,9 @@ export default function Payment() {
           {/* สรุปยอด (ย่อ) */}
           <div className={styles.card}>
             <div className={styles.sectionTitle}>ยอดชำระทั้งหมด</div>
-            <div style={{display:'flex', justifyContent:'space-between', fontWeight:700}}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}>
               <span>รวม</span>
-              <span>฿{Number(amount||0).toLocaleString("th-TH")}</span>
+              <span>฿{Number(amount || 0).toLocaleString("th-TH")}</span>
             </div>
           </div>
         </div>

@@ -106,7 +106,8 @@
    ส่วน: วิธีชำระเงิน
 =========================== */
 .payMethod {
-  display: grid;
+  display: flex;               /* วางตัวเลือกเป็นคอลัมน์ */
+  flex-direction: column;
   gap: 10px;
   margin-top: 8px;
   padding: 10px 12px;
@@ -116,10 +117,16 @@
 }
 
 .inline {
-  display: inline-flex;
-  align-items: center;
+  display: flex;               /* แต่ละตัวเลือก = 1 แถว */
+  align-items: flex-start;     /* ปุ่มชิดบรรทัดบนของข้อความ (ดูตรง) */
   gap: 8px;
   font-size: 14px;
+  cursor: pointer;
+}
+
+.inline input[type="radio"] {
+  margin: 0;
+  transform: scale(1.1);       /* ขยายปุ่มให้ดูชัด */
 }
 
 /* กล่องสลิปโอนเงิน */
@@ -138,7 +145,7 @@
 /* ✅ รูปสลิป / QR พร้อมเพย์ — ขยายใหญ่ขึ้น */
 .transferSection img {
   width: 100%;
-  max-width: 320px; /* ขยายจาก 240 → 320 */
+  max-width: 320px;
   height: auto;
   border-radius: 14px;
   margin: 0 auto;
@@ -283,7 +290,7 @@
 .container select,
 .container input,
 .container textarea {
-  width: 100%;
+  /* width: 100%; */
   padding: 10px 12px;
   border: 1px solid #cfd8dc;
   border-radius: 10px;
@@ -387,4 +394,50 @@
   gap: 8px;
   align-items: center;
   justify-content: flex-end;
+}
+/* ปุ่มอัปโหลดสลิปสวยๆ */
+.uploadWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.realFileInput {
+  display: none;
+}
+
+.prettyUploadBtn {
+  background: #1b5e20;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 10px rgba(27, 94, 32, 0.2);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.prettyUploadBtn:hover {
+  background: #2e7d32;
+  transform: translateY(-1px);
+}
+
+.prettyUploadBtn:active {
+  transform: scale(0.97);
+}
+
+.fileLabel {
+  font-size: 14px;
+  color: #37474f;
+  font-weight: 600;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

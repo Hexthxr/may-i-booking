@@ -1,0 +1,96 @@
+/* แถวหัวข้อหมวด + ปุ่มดูทั้งหมด */
+.home-cat-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.home-section-title {
+  margin: 0;
+}
+
+/* ปุ่ม "ดูทั้งหมด" ด้านขวา */
+.home-cat-more {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ff9800;
+  text-decoration: none;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.home-cat-more:hover {
+  background: #ffecb3;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+}
+
+/* คารูเซล 4 ใบ */
+.home-carousel {
+  position: relative;
+}
+
+/* ใช้ .grid เดิมของเฮีย แค่ครอบไว้เฉย ๆ */
+.home-carousel .grid {
+  margin: 0;
+}
+
+/* ปุ่มลูกศรเลื่อนซ้าย/ขวา */
+.home-carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: none;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff9800;
+  transition:
+    transform 0.150s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+  z-index: 2;
+}
+
+.home-carousel-arrow-left {
+  left: -18px;
+}
+
+.home-carousel-arrow-right {
+  right: -18px;
+}
+
+.home-carousel-arrow:hover {
+  transform: translateY(-50%) scale(1.05);
+  background: #fff8e1;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* จอเล็ก: ขยับปุ่มเข้ามานิดนึง */
+@media (max-width: 640px) {
+  .home-carousel-arrow-left {
+    left: -10px;
+  }
+  .home-carousel-arrow-right {
+    right: -10px;
+  }
+}

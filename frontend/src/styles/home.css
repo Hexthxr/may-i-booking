@@ -1,113 +1,165 @@
-/* ===== พื้นหลังไล่สีเขียว-ฟ้าแบบจาง ๆ ===== */
-.home-page {
-  min-height: 100vh;
-  background: linear-gradient(180deg, #e8fff4 0%, #dff6ff 45%, #e9fcf2 100%);
-}
+/* ---------------- HERO PRO ---------------- */
 
-/* ส่วน hero */
 .hero {
-  padding: 48px 0 24px;
-  text-align: center;
+  background: radial-gradient(circle at top left, #b9f6ca, #1b5e20 40%, #0f3d14 100%);
+  padding: 32px 0 40px;
+  color: #e8f5e9;
 }
 
-/* กล่องไฮไลท์ครอบ h1+p */
-.hero-highlight {
-  display: block;
-  width: 100%;
-  background: linear-gradient(90deg, #4ade80, #facc15); /* เขียว → เหลือง */
-  padding: 28px 40px;
-  border-radius: 20px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-  text-align: center;
+.heroPro {
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+  align-items: center;
 }
 
-.hero-highlight h1 {
-  margin: 0;
-  font-size: 2rem;
+.heroPro-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.heroPro-badge {
+  background: rgba(255,255,255,0.16);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
   font-weight: 700;
-  color: #1e293b;
 }
 
-.hero-highlight .hero-sub {
-  margin-top: 6px;
-  font-size: 1rem;
-  color: #334155;
+.heroPro-title {
+  font-size: 40px;
+  margin: 0;
+  font-weight: 900;
 }
 
-/* คอนเทนต์หมวดหมู่ */
-.home-content {
-  padding: 8px 0 40px;
+.heroPro-sub {
+  opacity: .92;
+  margin: 0;
+  max-width: 420px;
 }
 
-/* ===== การ์ดหนังสือ + รูปปก fit กรอบ ===== */
-.category-section .grid,
-.category-grid {
+.heroPro-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.heroPro-btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.heroPro-btn-primary {
+  background: #ffeb3b;
+  color: #1b5e20;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+}
+
+.heroPro-btn-ghost {
+  border: 1px solid rgba(255,255,255,0.4);
+  color: #fff;
+}
+
+.heroPro-right {
+  flex: 0 0 360px;
+}
+
+.heroPro-card {
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(12px);
+  padding: 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+.heroPro-card-header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+}
+
+.heroPro-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ffeb3b;
+}
+
+.heroPro-book-list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.heroPro-book-list li {
+  background: rgba(255,255,255,0.15);
+  padding: 6px 10px;
+  border-radius: 14px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
+  grid-template-columns: 40px 1fr auto;
+  gap: 10px;
+  align-items: center;
 }
 
-.book-card,
-.card {
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-  transition: transform .18s ease, box-shadow .18s ease;
+.heroPro-book-thumb {
+  width: 40px;
+  height: 52px;
+  border-radius: 10px;
 }
 
-.book-card:hover,
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+.heroPro-book-thumb-red {
+  background: linear-gradient(135deg, #ef5350, #b71c1c);
 }
 
-/* กรอบรูปปก 3:4 */
-.book-cover {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  overflow: hidden;
-  background: #f1f5f9; /* สีพื้นหลังเผื่อไม่มีรูป */
+.heroPro-book-thumb-blue {
+  background: linear-gradient(135deg, #42a5f5, #0d47a1);
 }
 
-.book-cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* ทำให้รูปเต็มกรอบโดยไม่บิด */
-  display: block;
+.heroPro-book-thumb-green {
+  background: linear-gradient(135deg, #66bb6a, #1b5e20);
 }
 
-/* fallback เผื่อ render <img> ตรง ๆ */
-.card > img,
-.category-section .card > img,
-.category-grid .card > img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.heroPro-book-title {
+  font-weight: 700;
 }
 
-/* ข้อมูลหนังสือ */
-.card .body,
-.book-info {
-  padding: 12px 14px 16px;
+.heroPro-book-tag {
+  background: #ffeb3b;
+  color: #1b5e20;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 800;
 }
 
-/* Responsive */
-@media (max-width: 640px) {
-  .hero {
-    padding: 36px 0 16px;
-  }
-  .category-section .grid,
-  .category-grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-  }
+/* pill ลอย */
+.heroPro-floating-pill {
+  margin-top: 10px;
+  font-size: 12px;
+  background: rgba(0,0,0,0.3);
+  padding: 6px 10px;
+  border-radius: 999px;
 }
+
+/* ---------------- FEATURED ROW 2 คอลัมน์ ---------------- */
 
 .featured-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 22px;
-  margin-top: 20px;
-  margin-bottom: 36px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin: 20px auto;
+}
+
+@media (max-width: 900px) {
+  .featured-row {
+    grid-template-columns: 1fr;
+  }
 }

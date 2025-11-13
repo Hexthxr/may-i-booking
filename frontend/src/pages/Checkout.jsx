@@ -303,27 +303,27 @@ export default function Checkout(){
           <div className={styles.card}>
             <div className={styles.cardHeader}><div className={styles.sectionTitle}>วิธีชำระเงิน</div></div>
             <div className={styles.payMethod}>
-              <label className={styles.inline}>
-                <input
-                  type="radio"
-                  name="pay"
-                  value="COD"
-                  checked={payment==='COD'}
-                  onChange={()=>setPayment('COD')}
-                />
-                ชำระปลายทาง (COD)
-              </label>
-              <label className={styles.inline}>
-                <input
-                  type="radio"
-                  name="pay"
-                  value="TRANSFER"
-                  checked={payment==='TRANSFER'}
-                  onChange={()=>setPayment('TRANSFER')}
-                />
-                โอน/พร้อมเพย์
-              </label>
-            </div>
+            <label className={styles.inline}>
+              <input
+                type="radio"
+                name="pay"
+                value="COD"
+                checked={payment==='COD'}
+                onChange={()=>setPayment('COD')}
+              />
+              ชำระปลายทาง (COD)
+            </label>
+            <label className={styles.inline}>
+              <input
+                type="radio"
+                name="pay"
+                value="TRANSFER"
+                checked={payment==='TRANSFER'}
+                onChange={()=>setPayment('TRANSFER')}
+              />
+              โอน/พร้อมเพย์
+            </label>
+          </div>
 
             {/* เมื่อเลือกโอน/พร้อมเพย์ แสดงปุ่มไปหน้าชำระเงิน */}
             {payment === 'TRANSFER' && (
