@@ -1,0 +1,390 @@
+/* frontend/src/styles/checkout.module.css */
+/* Strictly scoped to Checkout: NO global selectors. */
+
+/* Root wrapper specific to Checkout page */
+.container {
+  margin: 24px auto;
+  max-width: 1040px;
+  padding: 8px 16px 40px;
+  color: #1b1d1f;
+  background: #fafafa;
+}
+
+/* Header / stepper */
+.headerBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.brand {
+  font-weight: 900;
+  font-size: 20px;
+  color: #1b5e20;
+}
+
+.steps {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: #607d8b;
+}
+
+.step,
+.stepActive,
+.stepDone {
+  position: relative;
+  padding-left: 14px;
+}
+.stepDone::before,
+.stepActive::before,
+.step::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #2e7d32;
+}
+.stepActive {
+  color: #2e7d32;
+  font-weight: 700;
+}
+
+.title {
+  margin: 4px 0 0;
+  color: #1b5e20;
+}
+.subtitle {
+  margin: 2px 0 12px;
+  color: #2e7d32;
+}
+
+/* layout ซ้าย-ขวาใหญ่ */
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+  align-items: start;
+}
+
+.leftCol,
+.rightCol {
+  min-width: 0;
+}
+
+/* ฝั่งขวา: การ์ด “วิธีชำระเงิน” + “สรุปยอด” เรียงบน–ล่าง */
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* card base */
+.card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.04);
+  padding: 16px;
+  border: 1px solid #e8f5e9;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #e6ebf0;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  font-weight: 800;
+  color: #1b5e20;
+}
+
+/* ===========================
+   ส่วน: วิธีชำระเงิน
+=========================== */
+.payMethod {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f9fffb;
+  border: 1px dashed #c8e6c9;
+}
+
+.inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+/* กล่องสลิปโอนเงิน */
+.transferSection {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e0f2f1;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
+  text-align: center;
+}
+
+/* ✅ รูปสลิป / QR พร้อมเพย์ — ขยายใหญ่ขึ้น */
+.transferSection img {
+  width: 100%;
+  max-width: 320px; /* ขยายจาก 240 → 320 */
+  height: auto;
+  border-radius: 14px;
+  margin: 0 auto;
+  display: block;
+  object-fit: contain;
+  background: #f9fffb;
+  border: 2px solid #a5d6a7;
+  box-shadow: 0 6px 16px rgba(27, 94, 32, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* เอฟเฟกต์ hover นุ่ม ๆ */
+.transferSection img:hover {
+  transform: scale(1.03);
+  box-shadow: 0 10px 24px rgba(27, 94, 32, 0.15);
+}
+
+/* ===========================
+   ส่วน: สรุปยอด
+=========================== */
+.summaryList {
+  display: grid;
+  gap: 6px;
+  color: #444;
+}
+.hr {
+  border: none;
+  border-top: 1px dashed #ddd;
+  margin: 10px 0;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+}
+.rowBig {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1b5e20;
+}
+
+.actionCol {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.buyBtn {
+  padding: 14px 18px;
+  border-radius: 999px;
+  border: none;
+  background: #ff5722;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.buyBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(255, 87, 34, 0.35);
+}
+.buyBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.secondaryBtn {
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #555;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ===========================
+   Items
+=========================== */
+.list {
+  display: grid;
+  gap: 10px;
+}
+.itemRow {
+  display: grid;
+  grid-template-columns: 72px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 10px;
+}
+.cover {
+  width: 72px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #f3f3f3;
+}
+.itemMain {
+  min-width: 0;
+}
+.itemTitle {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.itemSub {
+  color: #666;
+  margin-top: 2px;
+}
+.lineTotal {
+  font-weight: 800;
+}
+
+.empty {
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.linkBtn {
+  margin-left: 4px;
+  border: none;
+  background: transparent;
+  color: #2e7d32;
+  cursor: pointer;
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+.notice {
+  background: #fff3e0;
+  border: 1px solid #ffe0b2;
+  color: #6d4c41;
+}
+
+/* ===========================
+   ฟอร์มทั่วไป
+=========================== */
+.container select,
+.container input,
+.container textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cfd8dc;
+  border-radius: 10px;
+  background: #fff;
+  color: #263238;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  box-sizing: border-box;
+}
+
+.container select:focus,
+.container input:focus,
+.container textarea:focus {
+  border-color: #66bb6a;
+  box-shadow: 0 0 0 3px rgba(102,187,106,.15);
+}
+
+.addressGrid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.field { display: grid; gap: 6px; }
+.label { font-size: 12px; color: #607d8b; font-weight: 600; }
+
+/* ===========================
+   Responsive
+=========================== */
+@media (max-width: 860px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+  }
+  .rightCol {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .addressGrid {
+    grid-template-columns: 1fr;
+  }
+  .itemRow {
+    grid-template-columns: 64px 1fr auto;
+  }
+  .cover {
+    width: 64px;
+    height: 86px;
+  }
+  .transferSection img {
+    max-width: 100%;
+  }
+}
+
+/* ===========================
+   Fancy address selector
+=========================== */
+.addrSelectWrap {
+  display: grid;
+  gap: 10px;
+}
+
+.addrSelectBig {
+  width: 100%;
+  padding: 16px 18px;
+  font-size: 16px;
+  border-radius: 14px;
+  border: 2px solid #a5d6a7;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fff8 100%);
+  box-shadow: 0 10px 24px rgba(27, 94, 32, 0.06);
+  color: #1b1d1f;
+  appearance: none;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .05s ease;
+}
+
+.addrSelectBig:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(27, 94, 32, 0.10);
+}
+
+.addrSelectBig:focus {
+  border-color: #66bb6a;
+  box-shadow: 0 0 0 4px rgba(102, 187, 106, .18);
+}
+
+.addrPreview {
+  padding: 12px 14px;
+  border: 1px dashed #cfd8dc;
+  border-radius: 12px;
+  color: #455a64;
+  background: #ffffff;
+}
+
+.addrPreviewTitle {
+  font-weight: 800;
+  color: #1b5e20;
+  margin-bottom: 4px;
+}
+
+.addrManageRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+}
