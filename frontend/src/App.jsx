@@ -1,4 +1,3 @@
-// frontend/src/App.jsx
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -37,7 +36,13 @@ export default function App() {
       <Routes>
         {/* Public */}
         <Route path="/" element={<Home />} />
+
+        {/* หน้า browse / category ทั้งหมด ใช้ Browse ตัวเดียวกัน */}
         <Route path="/browse" element={<Browse />} />
+        <Route path="/browse/:name" element={<Browse />} />
+        <Route path="/category" element={<Browse />} />
+        <Route path="/category/:name" element={<Browse />} />
+
         <Route path="/search" element={<SearchResults />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
