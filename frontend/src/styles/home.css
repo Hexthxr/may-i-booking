@@ -1,9 +1,9 @@
 /* ---------------- HERO PRO ---------------- */
 
 .hero {
-  background: radial-gradient(circle at top left, #b9f6ca, #1b5e20 40%, #0f3d14 100%);
+  background: radial-gradient(circle at top left, #b9f6ca, #61cef0 40%, #14b2f0 100%);
   padding: 32px 0 40px;
-  color: #e8f5e9;
+  color: #000000;
 }
 
 .heroPro {

@@ -92,7 +92,7 @@ export default function SearchBar() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder="ค้นหาหนังสือ ชื่อผู้แต่ง ISBN ..."
+          placeholder="ค้นหาหนังสือ"
           style={{
             flex: 1,
             border: 'none',

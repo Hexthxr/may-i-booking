@@ -102,3 +102,118 @@
   background:#e3f2fd; border:1px solid #bbdefb; color:#0d47a1;
   padding:8px 10px; border-radius:8px;
 }
+
+/* ... โค้ดเดิมทั้งหมดของ orders.module.css ... */
+
+/* สำหรับหน้า Orders ของ user (เดิม) มี .toast อยู่แล้ว */
+/* ด้านล่างเพิ่มของฝั่ง admin */
+/* ... ของเดิมด้านบนให้คงไว้ ... */
+
+/* -------- Admin extra styles -------- */
+
+.customer {
+  font-size: 13px;
+  color: #37474f;
+}
+
+.thumbSlipWrapper {
+  width: 120px;
+  max-height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e0e0e0;
+  background: #fafafa;
+}
+
+.thumbSlip {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.adminMeta {
+  font-size: 13px;
+  color: #546e7a;
+}
+
+/* แถวปุ่มสามปุ่ม */
+.adminActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+  justify-content: flex-start;  /* ✅ บังคับให้ปุ่มชิดซ้าย */
+  align-items: left;
+}
+
+/* ปุ่มใหญ่แนวเกม (base) */
+.adminBtn {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 24px;
+  min-width: 160px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.18);
+  transition: transform 0.05s ease, box-shadow 0.05s ease, filter 0.05s ease;
+}
+
+.adminBtn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  box-shadow: none;
+}
+
+.adminBtn:not(:disabled):active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
+  filter: brightness(0.95);
+}
+
+/* สีปุ่ม 3 อัน */
+.adminBtnBlue {
+  background: linear-gradient(180deg, #42a5f5, #1e88e5);
+}
+
+.adminBtnGreen {
+  background: linear-gradient(180deg, #66bb6a, #43a047);
+}
+
+.adminBtnYellow {
+  background: linear-gradient(180deg, #ffca28, #ffb300);
+  color: #3e2723;
+}
+
+/* ปุ่มเล็กทั่วไปที่ใช้ในหลายหน้า (คงไว้) */
+.btnSmall {
+  border: none;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  background: #eeeeee;
+  color: #37474f;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* หน้าแสดงสลิปเดี่ยว */
+.slipPage {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.slipImage {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
