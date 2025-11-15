@@ -3,7 +3,7 @@ info:
   title: May i Booking API
   version: 1.0.0
   description: >
-    Skeleton OpenAPI spec for May i Booking project.
+    OpenAPI spec for May i Booking project.
     NOTE: This is a draft structure. Please fill in request/response schemas and examples.
 
 servers:
@@ -26,6 +26,14 @@ tags:
   - name: Orders
     description: Order placement and management
 
+  # --- Role-based tags ---
+  - name: Guest
+    description: Public endpoints that don't require login
+  - name: User
+    description: Endpoints for logged-in users (user or admin)
+  - name: Admin
+    description: Endpoints that require admin role
+
 components:
   securitySchemes:
     BearerAuth:
@@ -34,7 +42,6 @@ components:
       bearerFormat: JWT
 
   schemas:
-    # ---- BASIC MODELS (SKELETONS) ----
     User:
       type: object
       properties:
@@ -198,8 +205,9 @@ paths:
 
   /api/auth/register:
     post:
-      tags: [Auth]
+      tags: [Auth, Guest]
       summary: Register a new user
+      x-roles: [guest]
       requestBody:
         required: true
         content:
@@ -231,8 +239,9 @@ paths:
 
   /api/auth/login:
     post:
-      tags: [Auth]
+      tags: [Auth, Guest]
       summary: Login with username or email and password
+      x-roles: [guest]
       requestBody:
         required: true
         content:
@@ -266,10 +275,11 @@ paths:
 
   /api/users/me:
     get:
-      tags: [Users]
+      tags: [Users, User]
       summary: Get current user profile
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       responses:
         '200':
           description: Current user profile
@@ -281,10 +291,11 @@ paths:
           description: Unauthorized
 
     patch:
-      tags: [Users]
+      tags: [Users, User]
       summary: Update current user profile
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       requestBody:
         required: true
         content:
@@ -306,10 +317,11 @@ paths:
 
   /api/users/me/avatar:
     post:
-      tags: [Users]
+      tags: [Users, User]
       summary: Upload avatar for current user
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       requestBody:
         required: true
         content:
@@ -329,9 +341,11 @@ paths:
           description: Unauthorized
 
     get:
-      tags: [Users]
+      tags: [Users, User]
       summary: Get current user avatar image
-      # Depending on implementation, auth may not be required.
+      security:
+        - BearerAuth: []
+      x-roles: [user, admin]
       responses:
         '200':
           description: Avatar image
@@ -345,10 +359,11 @@ paths:
 
   /api/users/me/favorites:
     get:
-      tags: [Users]
+      tags: [Users, User]
       summary: Get favorite books of current user
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       responses:
         '200':
           description: List of favorite book IDs or books
@@ -362,10 +377,11 @@ paths:
           description: Unauthorized
 
     put:
-      tags: [Users]
+      tags: [Users, User]
       summary: Replace favorite books list
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       requestBody:
         required: true
         content:
@@ -391,8 +407,9 @@ paths:
 
   /api/books:
     get:
-      tags: [Books]
+      tags: [Books, Guest, User, Admin]
       summary: Get list of books
+      x-roles: [guest, user, admin]
       parameters:
         - in: query
           name: category
@@ -418,10 +435,11 @@ paths:
                   $ref: '#/components/schemas/Book'
 
     post:
-      tags: [Books]
+      tags: [Books, Admin]
       summary: Create a new book (admin only)
       security:
         - BearerAuth: []
+      x-roles: [admin]
       requestBody:
         required: true
         content:
@@ -449,8 +467,9 @@ paths:
 
   /api/books/{id}:
     get:
-      tags: [Books]
+      tags: [Books, Guest, User, Admin]
       summary: Get book detail
+      x-roles: [guest, user, admin]
       parameters:
         - in: path
           name: id
@@ -468,10 +487,11 @@ paths:
           description: Book not found
 
     put:
-      tags: [Books]
+      tags: [Books, Admin]
       summary: Update a book (admin only)
       security:
         - BearerAuth: []
+      x-roles: [admin]
       parameters:
         - in: path
           name: id
@@ -507,10 +527,11 @@ paths:
           description: Book not found
 
     delete:
-      tags: [Books]
+      tags: [Books, Admin]
       summary: Delete a book (admin only)
       security:
         - BearerAuth: []
+      x-roles: [admin]
       parameters:
         - in: path
           name: id
@@ -529,8 +550,9 @@ paths:
 
   /api/books/{id}/cover:
     get:
-      tags: [Books]
+      tags: [Books, Guest, User, Admin]
       summary: Get book cover image
+      x-roles: [guest, user, admin]
       parameters:
         - in: path
           name: id
@@ -550,8 +572,9 @@ paths:
 
   /api/books/recommended:
     get:
-      tags: [Books]
+      tags: [Books, Guest, User, Admin]
       summary: Get recommended books
+      x-roles: [guest, user, admin]
       responses:
         '200':
           description: List of recommended books
@@ -564,8 +587,9 @@ paths:
 
   /api/books/top-rated:
     get:
-      tags: [Books]
+      tags: [Books, Guest, User, Admin]
       summary: Get top-rated books
+      x-roles: [guest, user, admin]
       responses:
         '200':
           description: List of top-rated books
@@ -578,8 +602,9 @@ paths:
 
   /api/books/best-sellers:
     get:
-      tags: [Books]
+      tags: [Books, Guest, User, Admin]
       summary: Get best-seller books
+      x-roles: [guest, user, admin]
       responses:
         '200':
           description: List of best sellers
@@ -596,8 +621,9 @@ paths:
 
   /api/books/{bookId}/reviews:
     get:
-      tags: [Reviews]
+      tags: [Reviews, Guest, User, Admin]
       summary: Get reviews for a book
+      x-roles: [guest, user, admin]
       parameters:
         - in: path
           name: bookId
@@ -615,10 +641,11 @@ paths:
                   $ref: '#/components/schemas/Review'
 
     post:
-      tags: [Reviews]
+      tags: [Reviews, User]
       summary: Create or update review for this book by current user
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       parameters:
         - in: path
           name: bookId
@@ -652,8 +679,9 @@ paths:
 
   /api/books/{bookId}/reviews/rating:
     get:
-      tags: [Reviews]
+      tags: [Reviews, Guest, User, Admin]
       summary: Get rating summary for a book
+      x-roles: [guest, user, admin]
       parameters:
         - in: path
           name: bookId
@@ -675,10 +703,11 @@ paths:
 
   /api/books/{bookId}/reviews/me:
     delete:
-      tags: [Reviews]
+      tags: [Reviews, User]
       summary: Delete current user's review for this book
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       parameters:
         - in: path
           name: bookId
@@ -699,10 +728,11 @@ paths:
 
   /api/cart:
     get:
-      tags: [Cart]
+      tags: [Cart, User]
       summary: Get current user's cart
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       responses:
         '200':
           description: Current cart
@@ -719,10 +749,11 @@ paths:
           description: Unauthorized
 
     post:
-      tags: [Cart]
+      tags: [Cart, User]
       summary: Sync entire cart items
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       requestBody:
         required: true
         content:
@@ -743,10 +774,11 @@ paths:
           description: Unauthorized
 
     delete:
-      tags: [Cart]
+      tags: [Cart, User]
       summary: Clear cart
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       responses:
         '204':
           description: Cart cleared
@@ -755,10 +787,11 @@ paths:
 
   /api/cart/items:
     post:
-      tags: [Cart]
+      tags: [Cart, User]
       summary: Add an item to cart
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       requestBody:
         required: true
         content:
@@ -779,10 +812,11 @@ paths:
           description: Unauthorized
 
     delete:
-      tags: [Cart]
+      tags: [Cart, User]
       summary: Remove an item from cart
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       requestBody:
         required: true
         content:
@@ -802,10 +836,11 @@ paths:
 
   /api/cart/qty:
     put:
-      tags: [Cart]
+      tags: [Cart, User]
       summary: Update quantity of an item in cart
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       requestBody:
         required: true
         content:
@@ -831,10 +866,11 @@ paths:
 
   /api/addresses:
     get:
-      tags: [Addresses]
+      tags: [Addresses, User]
       summary: Get all addresses of current user
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       responses:
         '200':
           description: List of addresses
@@ -848,10 +884,11 @@ paths:
           description: Unauthorized
 
     post:
-      tags: [Addresses]
+      tags: [Addresses, User]
       summary: Create new address
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       requestBody:
         required: true
         content:
@@ -872,10 +909,11 @@ paths:
 
   /api/addresses/{id}:
     patch:
-      tags: [Addresses]
+      tags: [Addresses, User]
       summary: Update an address
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       parameters:
         - in: path
           name: id
@@ -903,10 +941,11 @@ paths:
           description: Address not found
 
     delete:
-      tags: [Addresses]
+      tags: [Addresses, User]
       summary: Delete an address
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       parameters:
         - in: path
           name: id
@@ -923,10 +962,11 @@ paths:
 
   /api/addresses/{id}/default:
     patch:
-      tags: [Addresses]
+      tags: [Addresses, User]
       summary: Set address as default
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       parameters:
         - in: path
           name: id
@@ -947,10 +987,11 @@ paths:
 
   /api/orders:
     post:
-      tags: [Orders]
+      tags: [Orders, User]
       summary: Create a new order
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       requestBody:
         required: true
         content:
@@ -973,10 +1014,11 @@ paths:
           description: Unauthorized
 
     get:
-      tags: [Orders]
+      tags: [Orders, User]
       summary: Get orders of current user
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       responses:
         '200':
           description: List of user's orders
@@ -991,10 +1033,11 @@ paths:
 
   /api/orders/admin:
     get:
-      tags: [Orders]
+      tags: [Orders, Admin]
       summary: Get all orders (admin only)
       security:
         - BearerAuth: []
+      x-roles: [admin]
       parameters:
         - in: query
           name: page
@@ -1024,10 +1067,11 @@ paths:
 
   /api/orders/{id}:
     get:
-      tags: [Orders]
+      tags: [Orders, User, Admin]
       summary: Get order detail
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       parameters:
         - in: path
           name: id
@@ -1050,10 +1094,11 @@ paths:
 
   /api/orders/{id}/slip:
     get:
-      tags: [Orders]
+      tags: [Orders, User, Admin]
       summary: Get payment slip image
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       parameters:
         - in: path
           name: id
@@ -1077,10 +1122,11 @@ paths:
 
   /api/orders/{id}/cancel:
     patch:
-      tags: [Orders]
+      tags: [Orders, User]
       summary: Cancel an order (by owner)
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       parameters:
         - in: path
           name: id
@@ -1105,10 +1151,11 @@ paths:
 
   /api/orders/{id}/complete:
     patch:
-      tags: [Orders]
+      tags: [Orders, Admin]
       summary: Mark order as completed (admin)
       security:
         - BearerAuth: []
+      x-roles: [admin]
       parameters:
         - in: path
           name: id
@@ -1131,10 +1178,11 @@ paths:
 
   /api/orders/{id}/reorder:
     post:
-      tags: [Orders]
+      tags: [Orders, User]
       summary: Create new order items from previous order
       security:
         - BearerAuth: []
+      x-roles: [user, admin]
       parameters:
         - in: path
           name: id
