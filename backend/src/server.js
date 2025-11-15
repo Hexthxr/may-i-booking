@@ -21,11 +21,29 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+
+// ----- Swagger (ESM version) -----
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// กำหนด __dirname ใน ES Module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// โหลดไฟล์ YAML (อยู่ใน backend/openapi.yaml)
+const swaggerDocument = YAML.load(path.join(__dirname, '../openapi.yaml'));
+
+// Mount Swagger UI route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 // ---------- Middlewares ----------
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
 
 // CORS: ปล่อยตาม CLIENT_ORIGIN, ถ้าเป็น * = ให้ทุก origin
 const clientOrigin = process.env.CLIENT_ORIGIN || '*';
