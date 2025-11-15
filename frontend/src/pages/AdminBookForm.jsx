@@ -1,8 +1,7 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import api, { apiBase } from '../api';
-import '../styles/adminBookForm.css'; // <<— เพิ่มการอิมพอร์ตไฟล์สไตล์
+import '../styles/adminBookForm.css';
 
 // ต้องตรงกับ enum ฝั่ง backend (models/Book.js)
 const CATS = ['การเงินการลงทุน', 'มังงะ', 'นิยาย', 'อาหารเเละสุขภาพ', 'การเรียน'];
@@ -23,12 +22,15 @@ export default function AdminBookForm() {
     year: 2025,
     category: CATS[0],
     price: 0,
-    stock: 0, // ✅ เพิ่ม stock (ค่าเริ่มต้น 0)
+    stock: 0,
   });
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [dragOver, setDragOver] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // ✅ ใหม่: popup หลังบันทึกสำเร็จ
+  const [successInfo, setSuccessInfo] = useState(null);
 
   // โหลดข้อมูลเดิมถ้าเป็นโหมดแก้ไข
   useEffect(() => {
@@ -46,30 +48,33 @@ export default function AdminBookForm() {
         year: data.year || 2025,
         category: data.category || CATS[0],
         price: data.price ?? 0,
-        stock: data.stock ?? 0, // ✅ ดึง stock จากฐานข้อมูล
+        stock: data.stock ?? 0,
       });
-      setPreviewUrl(`${apiBase()}/books/${id}/cover?v=${encodeURIComponent(data.updatedAt || '')}`);
+      setPreviewUrl(
+        `${apiBase()}/books/${id}/cover?v=${encodeURIComponent(
+          data.updatedAt || ''
+        )}`
+      );
     })();
   }, [editing, id]);
 
   function onChange(e) {
     const { name, value } = e.target;
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       [name]:
         name === 'pages' ||
         name === 'year' ||
         name === 'price' ||
-        name === 'stock'         // ✅ แปลง stock เป็น number
+        name === 'stock'
           ? Number(value)
-          : value
+          : value,
     }));
   }
 
   function onFileInput(e) {
     const f = e.target.files?.[0];
-    if (!f) return;
-    handleSetFile(f);
+    if (f) handleSetFile(f);
   }
 
   const handleSetFile = (f) => {
@@ -101,14 +106,17 @@ export default function AdminBookForm() {
         sku: form.sku?.trim() || undefined,
         title: form.title?.trim(),
         description: form.description?.trim(),
-        authors: (form.authors || '').split(',').map(s => s.trim()).filter(Boolean),
+        authors: (form.authors || '')
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
         publisher: form.publisher?.trim(),
         language: form.language,
         pages: Number(form.pages) || 0,
         year: Number(form.year) || 2025,
         category: form.category,
         price: Number(form.price) || 0,
-        stock: Math.max(0, Number(form.stock) || 0), // ✅ ส่งค่า stock ไป backend
+        stock: Math.max(0, Number(form.stock) || 0),
       };
 
       const fd = new FormData();
@@ -116,21 +124,94 @@ export default function AdminBookForm() {
       if (file) fd.append('cover', file);
 
       if (editing) {
-        await api.put(`/books/${id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await api.put(`/books/${id}`, fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
       } else {
-        await api.post('/books', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+        await api.post('/books', fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
       }
-      nav('/admin/books');
+
+      // ✅ แสดง popup แทนการ redirect ทันที
+      setSuccessInfo({
+        mode: editing ? 'edit' : 'create',
+        title: payload.title,
+      });
     } finally {
       setSubmitting(false);
     }
   }
 
+  const closeSuccess = () => setSuccessInfo(null);
+  const goToList = () => {
+    setSuccessInfo(null);
+    nav('/admin/books');
+  };
+
   return (
     <div className="abf-container">
+      {/* ✅ Popup แจ้งผล */}
+      {successInfo && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15,23,42,0.45)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+          }}
+        >
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: 16,
+              padding: '20px 24px',
+              maxWidth: 420,
+              width: '90%',
+              boxShadow: '0 20px 45px rgba(0,0,0,0.2)',
+            }}
+          >
+            <h3 style={{ marginBottom: 8 }}>
+              {successInfo.mode === 'edit'
+                ? 'แก้ไขหนังสือสำเร็จ'
+                : 'เพิ่มหนังสือใหม่สำเร็จ'}
+            </h3>
+            <p style={{ fontSize: 14, color: '#4b5563', marginBottom: 16 }}>
+              {successInfo.title
+                ? `เล่ม: ${successInfo.title}`
+                : 'บันทึกข้อมูลหนังสือเรียบร้อยแล้ว'}
+            </p>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 8,
+                marginTop: 8,
+              }}
+            >
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={closeSuccess}
+              >
+                ปิด
+              </button>
+              <button type="button" className="btn" onClick={goToList}>
+                ไปหน้ารายการหนังสือ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="abf-header">
-        <Link to="/admin/books" className="btn secondary">← กลับรายการหนังสือ</Link>
+        <Link to="/admin/books" className="btn secondary">
+          ← กลับรายการหนังสือ
+        </Link>
         <h2>{editing ? 'แก้ไขหนังสือ' : 'เพิ่มหนังสือใหม่'}</h2>
       </div>
 
@@ -139,111 +220,184 @@ export default function AdminBookForm() {
         {/* LEFT: Cover */}
         <section>
           <div
-            className={`abf-cover-drop ${dragOver ? 'drag' : ''}`}
-            title="ลากรูปมาวางที่นี่ หรือกดเพื่อเลือกไฟล์"
+            className={`abf-cover-dropzone ${dragOver ? 'drag-over' : ''}`}
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
-            onClick={() => document.getElementById('abf-file-input')?.click()}
+            onClick={() =>
+              document.getElementById('abf-file-input')?.click()
+            }
           >
             {previewUrl ? (
               <img src={previewUrl} alt="preview" className="abf-cover-img" />
             ) : (
               <div className="abf-cover-empty">
                 <div className="abf-cover-empty-title">ไม่มีรูปปก</div>
-                <small>รองรับไฟล์ภาพทั่วไป • แนะนำอัตราส่วน 3:4 • &gt;= 600×800px</small>
+                <small>
+                  รองรับไฟล์ภาพทั่วไป • แนะนำอัตราส่วน 3:4 • &gt;= 600×800px
+                </small>
               </div>
             )}
           </div>
 
-          <input id="abf-file-input" type="file" accept="image/*" onChange={onFileInput} style={{ display: 'none' }} />
+          <input
+            id="abf-file-input"
+            type="file"
+            accept="image/*"
+            onChange={onFileInput}
+            style={{ display: 'none' }}
+          />
 
-          <div className="abf-file-info">
-            {file ? <>ไฟล์ที่เลือก: <strong>{file.name}</strong> ({Math.round(file.size/1024)} KB)</> : 'ยังไม่ได้เลือกไฟล์'}
+          <div className="abf-hint" style={{ marginTop: 8 }}>
+            คลิก หรือ ลากรูปภาพมาวาง เพื่อเปลี่ยนปกหนังสือ
           </div>
         </section>
 
-        {/* RIGHT: Fields */}
+        {/* RIGHT: Form fields */}
         <section>
-          {/* Group: Basic */}
-          <FieldGroup title="ข้อมูลทั่วไป">
-            <Row label="SKU" hint="เช่น BK-001">
-              <input name="sku" value={form.sku} onChange={onChange} placeholder="เช่น BK-001" />
-            </Row>
-
-            <Row label="ชื่อเรื่อง" required>
-              <input required name="title" value={form.title} onChange={onChange} placeholder="กรอกชื่อหนังสือ" />
-            </Row>
-
-            <Row label="คำอธิบาย">
-              <textarea name="description" value={form.description} onChange={onChange} rows={5} placeholder="สรุปเนื้อหา/จุดเด่นโดยย่อ" />
-            </Row>
-          </FieldGroup>
-
-          {/* Group: Publication */}
-          <FieldGroup title="สำนักพิมพ์ & รายละเอียด">
+          <FieldGroup>
             <div className="abf-two">
               <div>
-                <Label text="สำนักพิมพ์" />
-                <input name="publisher" value={form.publisher} onChange={onChange} placeholder="เช่น MIB Press" />
-                <Hint text="ถ้าไม่ทราบสามารถเว้นว่างได้" />
+                <Label text="SKU (ถ้ามี)" />
+                <input
+                  name="sku"
+                  value={form.sku}
+                  onChange={onChange}
+                  placeholder="เช่น MIB-001"
+                />
+                <Hint text="รหัสภายในร้าน ใช้ค้นหาหรือจัดสต๊อก" />
               </div>
-              <div>
-                <Label text="ภาษา" />
-                <select name="language" value={form.language} onChange={onChange}>
-                  <option value="TH">TH</option>
-                  <option value="EN">EN</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="abf-two">
-              <div>
-                <Label text="จำนวนหน้า" />
-                <input type="number" name="pages" value={form.pages} onChange={onChange} min="0" />
-              </div>
-              <div>
-                <Label text="ปีพิมพ์" />
-                <input type="number" name="year" value={form.year} onChange={onChange} min="1900" max="2100" />
-              </div>
-            </div>
-
-            {/* ✅ แถวสต๊อก: ใช้คลาสเดิม ไม่เปลี่ยนเลย์เอาต์ */}
-            <div className="abf-two">
-              <div>
-                <Label text="สต๊อก" />
-                <input type="number" name="stock" value={form.stock} onChange={onChange} min="0" />
-              </div>
-              <div />
-            </div>
-          </FieldGroup>
-
-          {/* Group: Authors */}
-          <FieldGroup title="ผู้เขียน & หมวดหมู่ & ราคา">
-            <Row label="ผู้เขียน (คั่นด้วย ,)" hint="ตัวอย่าง: A, B">
-              <input name="authors" value={form.authors} onChange={onChange} placeholder="เช่น A, B" />
-            </Row>
-
-            <div className="abf-two">
               <div>
                 <Label text="หมวดหมู่" required />
-                <select name="category" value={form.category} onChange={onChange}>
-                  {CATS.map(c => <option key={c} value={c}>{c}</option>)}
+                <select
+                  name="category"
+                  value={form.category}
+                  onChange={onChange}
+                >
+                  {CATS.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
                 </select>
               </div>
+            </div>
+
+            <div>
+              <Label text="ชื่อหนังสือ" required />
+              <input
+                name="title"
+                value={form.title}
+                onChange={onChange}
+                required
+              />
+            </div>
+
+            <div>
+              <Label text="คำอธิบาย / รายละเอียด" />
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={onChange}
+                rows={5}
+              />
+            </div>
+
+            <div className="abf-two">
               <div>
-                <Label text="ราคา" />
-                <input type="number" name="price" value={form.price} onChange={onChange} min="0" step="1" />
+                <Label text="ผู้เขียน" />
+                <input
+                  name="authors"
+                  value={form.authors}
+                  onChange={onChange}
+                  placeholder="คั่นหลายคนด้วย ,"
+                />
+              </div>
+              <div>
+                <Label text="สำนักพิมพ์" />
+                <input
+                  name="publisher"
+                  value={form.publisher}
+                  onChange={onChange}
+                />
               </div>
             </div>
           </FieldGroup>
 
-          {/* Actions */}
+          <FieldGroup title="รายละเอียดเพิ่มเติม">
+            <div className="abf-two">
+              <div>
+                <Label text="ภาษา" />
+                <input
+                  name="language"
+                  value={form.language}
+                  onChange={onChange}
+                />
+              </div>
+              <div>
+                <Label text="จำนวนหน้า" />
+                <input
+                  type="number"
+                  name="pages"
+                  value={form.pages}
+                  onChange={onChange}
+                  min="0"
+                />
+              </div>
+            </div>
+
+            <div className="abf-two">
+              <div>
+                <Label text="ปีพิมพ์" />
+                <input
+                  type="number"
+                  name="year"
+                  value={form.year}
+                  onChange={onChange}
+                  min="1900"
+                  max="2100"
+                />
+              </div>
+            </div>
+
+            <div className="abf-two">
+              <div>
+                <Label text="ราคา (บาท)" required />
+                <input
+                  type="number"
+                  name="price"
+                  value={form.price}
+                  onChange={onChange}
+                  min="0"
+                  step="1"
+                />
+              </div>
+              <div>
+                <Label text="สต๊อก" />
+                <input
+                  type="number"
+                  name="stock"
+                  value={form.stock}
+                  onChange={onChange}
+                  min="0"
+                />
+              </div>
+            </div>
+          </FieldGroup>
+
           <div className="abf-actions">
-            <button className="btn" type="submit" disabled={submitting}>
-              {submitting ? (editing ? 'กำลังบันทึก…' : 'กำลังสร้าง…') : (editing ? 'บันทึกการแก้ไข' : 'สร้างหนังสือ')}
+            <button type="submit" className="btn" disabled={submitting}>
+              {submitting
+                ? editing
+                  ? 'กำลังบันทึก...'
+                  : 'กำลังเพิ่ม...'
+                : editing
+                  ? 'บันทึกการแก้ไข'
+                  : 'เพิ่มหนังสือ'}
             </button>
-            <Link className="btn secondary" to="/admin/books">ยกเลิก</Link>
+            <Link to="/admin/books" className="btn secondary">
+              ยกเลิก
+            </Link>
           </div>
         </section>
       </form>
@@ -251,31 +405,20 @@ export default function AdminBookForm() {
   );
 }
 
-/* ---------- Small UI helpers ---------- */
-
 function FieldGroup({ title, children }) {
   return (
-    <div className="abf-group">
-      <div className="abf-group-title">{title}</div>
-      {children}
-    </div>
-  );
-}
-
-function Row({ label, required, hint, children }) {
-  return (
-    <div className="abf-row">
-      <Label text={label} required={required} />
-      {children}
-      {hint && <Hint text={hint} />}
-    </div>
+    <section className="abf-group">
+      {title && <h3 className="abf-group-title">{title}</h3>}
+      <div className="abf-group-body">{children}</div>
+    </section>
   );
 }
 
 function Label({ text, required }) {
   return (
     <label className="abf-label">
-      {text}{required && <span className="abf-required"> *</span>}
+      {text}
+      {required && <span className="abf-required"> *</span>}
     </label>
   );
 }

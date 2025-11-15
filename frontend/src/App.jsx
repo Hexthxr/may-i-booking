@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+// frontend/src/App.jsx
+import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 
@@ -24,11 +25,14 @@ import AdminBooks from './pages/AdminBooks';
 import AdminBookForm from './pages/AdminBookForm';
 import AdminOrders from './pages/AdminOrders.jsx';
 import AdminOrderSlip from './pages/AdminOrderSlip.jsx';
+import AdminUsers from './pages/AdminUsers.jsx';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import Payment from './pages/Payment.jsx';
 import SearchResults from './pages/SearchResults.jsx';
 import TrackOrder from './pages/TrackOrder.jsx';
+
+import CategoryRedirect from './pages/CategoryRedirect.jsx';
 
 export default function App() {
   return (
@@ -38,41 +42,40 @@ export default function App() {
         {/* Public */}
         <Route path="/" element={<Home />} />
 
-        {/* หน้า browse / category ทั้งหมด ใช้ Browse ตัวเดียวกัน */}
+        {/* Browse ทุกหมวด + ผ่าน query */}
         <Route path="/browse" element={<Browse />} />
-        <Route path="/browse/:name" element={<Browse />} />
-        <Route path="/category" element={<Browse />} />
-        <Route path="/category/:name" element={<Browse />} />
+        {/* เผื่อมีใช้ /browse/:category */}
+        <Route path="/browse/:category" element={<Browse />} />
+        {/* ลิงก์แบบ /category/มังงะ → redirect ไป /browse?category=มังงะ */}
+        <Route path="/category/:category" element={<CategoryRedirect />} />
 
-        {/* หน้าติดตามสถานะการจัดส่ง (mock) */}
-        <Route path="/track" element={<TrackOrder />} />
-
+        <Route path="/book/:id" element={<BookDetail />} />
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/track-order" element={<TrackOrder />} />
+
+        {/* Auth */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/payment" element={<Payment />} />
 
-        {/* Books */}
-        <Route path="/books/:id" element={<BookDetail />} />
-        <Route path="/book/:id" element={<Navigate to="/books/:id" replace />} />
+        {/* Customer */}
+        <Route
+  path="/profile"
+  element={
+    <ProtectedRoute>
+      <Account />
+    </ProtectedRoute>
+  }
+/>
 
-        {/* User / Account */}
-        <Route
-          path="/account"
-          element={
-            <ProtectedRoute>
-              <Account />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Account />
-            </ProtectedRoute>
-          }
-        />
+<Route
+  path="/account"
+  element={
+    <ProtectedRoute>
+      <Account />
+    </ProtectedRoute>
+  }
+/>
+
         <Route
           path="/account/address"
           element={
@@ -81,15 +84,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/checkout"
-          element={
-            <ProtectedRoute>
-              <Checkout />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/cart" element={<Cart />} />
         <Route
           path="/orders"
           element={
@@ -107,13 +101,15 @@ export default function App() {
           }
         />
         <Route
-          path="/orders/success"
+          path="/checkout"
           element={
             <ProtectedRoute>
-              <OrderSuccess />
+              <Checkout />
             </ProtectedRoute>
           }
         />
+        <Route path="/payment" element={<Payment />} />
+        <Route path="/cart" element={<Cart />} />
         <Route
           path="/settings"
           element={
@@ -138,6 +134,14 @@ export default function App() {
           element={
             <ProtectedRoute role="admin">
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminUsers />
             </ProtectedRoute>
           }
         />
@@ -181,9 +185,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-
-        {/* Fallback (ถ้าอยากให้ทุก path แปลก ๆ กลับไปหน้าแรก) */}
-        {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
       </Routes>
       <Footer />
     </>

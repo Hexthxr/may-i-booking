@@ -1,58 +1,51 @@
-// import mongoose from 'mongoose';
-
-// export const ALLOWED_CATEGORIES = ['การเงินการลงทุน','มังงะ','นิยาย','อาหารเเละสุขภาพ','การเรียน'];
-
-// const CoverSchema = new mongoose.Schema({
-//   data: { type: Buffer },
-//   contentType: { type: String }
-// }, { _id: false });
-
-// const BookSchema = new mongoose.Schema({
-//   sku: { type: String, trim: true },
-//   title: { type: String, required: true, trim: true },
-//   description: { type: String, default: '' },
-//   cover: { type: CoverSchema, default: null },
-//   authors: [{ type: String }],
-//   publisher: { type: String, default: '' },
-//   language: { type: String, default: 'TH' },
-//   pages: { type: Number, default: 0 },
-//   year: { type: Number, default: 2025 },
-//   category: { type: String, enum: ALLOWED_CATEGORIES, required: true },
-//   price: { type: Number, required: true, min: 0, default: 0 }
-// }, { timestamps: true });
-
-// export const Book = mongoose.model('Book', BookSchema);
-
+// backend/src/models/Book.js
 import mongoose from 'mongoose';
 
-export const ALLOWED_CATEGORIES = ['การเงินการลงทุน','มังงะ','นิยาย','อาหารเเละสุขภาพ','การเรียน'];
+export const ALLOWED_CATEGORIES = [
+  'การเงินการลงทุน',
+  'มังงะ',
+  'นิยาย',
+  'อาหารเเละสุขภาพ',
+  'การเรียน',
+];
 
-const CoverSchema = new mongoose.Schema({
-  data: { type: Buffer },
-  contentType: { type: String }
-}, { _id: false });
+const CoverSchema = new mongoose.Schema(
+  {
+    data: { type: Buffer },
+    contentType: { type: String },
+  },
+  { _id: false }
+);
 
-const BookSchema = new mongoose.Schema({
-  sku: { type: String, trim: true },
-  title: { type: String, required: true, trim: true },
-  description: { type: String, default: '' },
-  cover: { type: CoverSchema, default: null },
-  authors: [{ type: String }],
-  publisher: { type: String, default: '' },
-  language: { type: String, default: 'TH' },
-  pages: { type: Number, default: 0 },
-  year: { type: Number, default: 2025 },
-  category: { type: String, enum: ALLOWED_CATEGORIES, required: true },
-  price: { type: Number, required: true, min: 0, default: 0 },
+const BookSchema = new mongoose.Schema(
+  {
+    // ข้อมูลพื้นฐาน
+    sku: { type: String, trim: true },
+    title: { type: String, required: true, trim: true },
+    description: { type: String, default: '' },
+    cover: { type: CoverSchema, default: null },
+    authors: [{ type: String }],
+    publisher: { type: String, default: '' },
+    language: { type: String, default: 'TH' },
+    pages: { type: Number, default: 0 },
+    year: { type: Number, default: 2025 },
 
-  // ---- สต๊อกสินค้า ----
-  stock: { type: Number, min: 0, default: 0 },
-  isPreorder: { type: Boolean, default: false },
+    // หมวดหมู่/ราคา
+    category: { type: String, enum: ALLOWED_CATEGORIES, required: true },
+    price: { type: Number, required: true, min: 0, default: 0 },
 
-  // ---- สถิติรีวิว/เรตติ้ง ----
-  avgRating: { type: Number, default: 0 },   // ค่าเฉลี่ย 0–5 (คำนวณจาก Review)
-  ratingCount: { type: Number, default: 0 }, // จำนวนรีวิวทั้งหมด
-}, { timestamps: true });
+    // สต๊อก
+    stock: { type: Number, min: 0, default: 0 },
+    isPreorder: { type: Boolean, default: false },
+
+    // สถานะการแสดงผล (ใหม่) → ใช้แทนการลบจริง
+    isHidden: { type: Boolean, default: false },
+
+    // สถิติรีวิว
+    avgRating: { type: Number, default: 0 },
+    ratingCount: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
 
 export const Book = mongoose.model('Book', BookSchema);
-

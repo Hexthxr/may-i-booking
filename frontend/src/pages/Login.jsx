@@ -1,7 +1,8 @@
+// frontend/src/pages/Login.jsx
 import { useState } from 'react';
 import api from '../api';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom'; // ⬅️ เพิ่ม useLocation
+import { useNavigate, useLocation } from 'react-router-dom';
 import { syncLocalToServerAndClear } from '../utils/cart';
 
 export default function Login() {
@@ -10,30 +11,41 @@ export default function Login() {
   const [err, setErr] = useState('');
   const { login } = useAuth();
   const nav = useNavigate();
-  const location = useLocation(); // ⬅️ ใช้อ่าน next ที่ส่งมา
+  const location = useLocation();
 
-  // อ่าน next จาก state หรือจาก query string เป็น fallback
+  // อนุญาตเฉพาะ path ภายในเว็บ และไม่ให้ redirect ไปหน้า admin
+  const safeInternalPath = (p) => {
+    if (!p) return null;
+    // ต้องขึ้นต้นด้วย '/' แต่ไม่ใช่ '//' หรือ URL ภายนอก
+    if (!/^\/(?!\/)/.test(p)) return null;
+    // ถ้าเป็นหน้า admin ให้กลับหน้าแรกแทน
+    if (p.startsWith('/admin')) return '/';
+    return p;
+  };
+
+  // อ่าน next จาก state หรือจาก query string (?next=/xxx)
   const getNextPath = () => {
     const stateNext = location.state?.next;
-    if (typeof stateNext === 'string') return safeInternalPath(stateNext);
+    if (typeof stateNext === 'string') {
+      return safeInternalPath(stateNext) || '/';
+    }
 
     const sp = new URLSearchParams(location.search);
     const qNext = sp.get('next');
     return safeInternalPath(qNext) || '/';
   };
 
-  // ป้องกัน open redirect: อนุญาตเฉพาะ path ภายในเว็บ (ขึ้นต้นด้วย '/')
-  const safeInternalPath = (p) => (p && /^\/(?!\/)/.test(p) ? p : null);
-
   const onSubmit = async (e) => {
     e.preventDefault();
     setErr('');
     try {
       const res = await api.post('/auth/login', { usernameOrEmail, password });
-      login(res.data);  
-      await syncLocalToServerAndClear();                     // เก็บ token/user ตามที่ context คุณทำไว้
-      const next = getNextPath() || '/';     // ถ้าไม่มี next ให้กลับหน้า Home
-      nav(next, { replace: true });          // ⬅️ เด้งไปหน้าที่ตั้งใจ (เช่น /checkout)
+      login(res.data); // เก็บ token / user ใน context
+      await syncLocalToServerAndClear();
+
+      // ถ้า next เป็นหน้า admin จะถูกเปลี่ยนให้เป็น '/'
+      const next = getNextPath();
+      nav(next, { replace: true });
     } catch (e) {
       setErr(e?.response?.data?.message || 'Login failed');
     }
@@ -46,8 +58,8 @@ export default function Login() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #d4fc79, #96e6a1)',
-        padding: '20px',
+        background: 'linear-gradient(135deg, #e8f5e9, #f1f8e9)',
+        padding: '16px',
       }}
     >
       <div
@@ -93,18 +105,14 @@ export default function Login() {
               style={{
                 width: '100%',
                 padding: '12px',
-                marginTop: '6px',
-                border: '1px solid #ccc',
                 borderRadius: '8px',
-                fontSize: '14px',
-                outline: 'none',
+                border: '1px solid #ccc',
+                marginTop: '4px',
               }}
-              onFocus={(e) => (e.target.style.borderColor = '#2e7d32')}
-              onBlur={(e) => (e.target.style.borderColor = '#ccc')}
             />
           </label>
 
-          <label style={{ display: 'block', marginBottom: '12px' }}>
+          <label style={{ display: 'block', marginBottom: '16px' }}>
             <span style={{ fontSize: '14px', color: '#444' }}>รหัสผ่าน</span>
             <input
               type="password"
@@ -114,14 +122,10 @@ export default function Login() {
               style={{
                 width: '100%',
                 padding: '12px',
-                marginTop: '6px',
-                border: '1px solid #ccc',
                 borderRadius: '8px',
-                fontSize: '14px',
-                outline: 'none',
+                border: '1px solid #ccc',
+                marginTop: '4px',
               }}
-              onFocus={(e) => (e.target.style.borderColor = '#2e7d32')}
-              onBlur={(e) => (e.target.style.borderColor = '#ccc')}
             />
           </label>
 
@@ -130,18 +134,14 @@ export default function Login() {
             style={{
               width: '100%',
               padding: '12px',
+              borderRadius: '999px',
+              border: 'none',
               background: '#2e7d32',
               color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
               fontSize: '16px',
-              fontWeight: 'bold',
+              fontWeight: '600',
               cursor: 'pointer',
-              transition: '0.3s',
-              marginTop: '8px',
             }}
-            onMouseOver={(e) => (e.target.style.background = '#1b5e20')}
-            onMouseOut={(e) => (e.target.style.background = '#2e7d32')}
           >
             เข้าสู่ระบบ
           </button>

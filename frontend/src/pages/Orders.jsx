@@ -5,7 +5,7 @@ import api, { apiBase } from '../api';
 import { useAuth } from '../context/AuthContext';
 import styles from '../styles/orders.module.css';
 
-const STATUS = ['ALL', 'TO_SHIP', 'SHIPPED', 'COMPLETED', 'CANCELLED'];
+const STATUS = ['ALL', 'TO_SHIP', 'COMPLETED', 'CANCELLED'];
 const STATUS_LABEL = {
   ALL: 'ทั้งหมด',
   TO_SHIP: 'ที่ต้องจัดส่ง',

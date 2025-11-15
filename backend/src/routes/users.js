@@ -1,7 +1,7 @@
 // backend/src/routes/users.js
 import express from 'express';
 import multer from 'multer';
-import { requireAuth } from '../middleware/requireAuth.js';
+import { requireAuth, requireRole } from '../middleware/requireAuth.js';
 import { User } from '../models/User.js';
 
 const router = express.Router();
@@ -11,10 +11,31 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 4 * 1024 * 1024 }, // 4MB
   fileFilter: (_req, file, cb) => {
-    const ok = ['image/png','image/jpeg','image/jpg','image/webp'].includes(file.mimetype);
+    const ok = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'].includes(file.mimetype);
     cb(ok ? null : new Error('Invalid avatar type (png, jpg, webp only)'), ok);
+  },
+});
+
+/* -----------------------------------------------------------
+   1) ADMIN: list user ทั้งหมด
+   GET /api/users
+   ตอบ { users: [...] }
+----------------------------------------------------------- */
+router.get('/', requireAuth, requireRole('admin'), async (req, res, next) => {
+  try {
+    const users = await User.find({})
+      .select('username fullname email role createdAt')
+      .sort({ createdAt: -1 });
+
+    res.json({ users });
+  } catch (err) {
+    next(err);
   }
 });
+
+/* -----------------------------------------------------------
+   2) โปรไฟล์ของตัวเอง
+----------------------------------------------------------- */
 
 // ดึงโปรไฟล์
 router.get('/me', requireAuth, async (req, res) => {
@@ -22,21 +43,29 @@ router.get('/me', requireAuth, async (req, res) => {
   res.json({ user });
 });
 
-// อัปเดตชื่อ/อีเมล (ไม่ต้องอัปเดตแบบ realtime ในหน้า — เราจะแก้ฝั่งหน้าให้)
+// อัปเดตชื่อ/อีเมล
 router.patch('/me', requireAuth, async (req, res) => {
-  const allow = ['fullname','email'];
+  const allow = ['fullname', 'email'];
   const update = {};
   for (const k of allow) if (k in req.body) update[k] = req.body[k];
 
   if (update.email) {
-    const exists = await User.findOne({ email: update.email, _id: { $ne: req.user.id } }).select('_id');
+    const exists = await User.findOne({
+      email: update.email,
+      _id: { $ne: req.user.id },
+    }).select('_id');
     if (exists) return res.status(409).json({ message: 'อีเมลนี้ถูกใช้งานแล้ว' });
   }
 
-  const user = await User.findByIdAndUpdate(req.user.id, update, { new: true })
-    .select('-password -passwordHash');
+  const user = await User.findByIdAndUpdate(req.user.id, update, { new: true }).select(
+    '-password -passwordHash'
+  );
   res.json({ user });
 });
+
+/* -----------------------------------------------------------
+   3) Avatar
+----------------------------------------------------------- */
 
 // อัปโหลดอวาตาร์
 router.post('/me/avatar', requireAuth, upload.single('avatar'), async (req, res) => {
@@ -44,7 +73,15 @@ router.post('/me/avatar', requireAuth, upload.single('avatar'), async (req, res)
     if (!req.file) return res.status(400).json({ message: 'ต้องมีไฟล์ avatar' });
     await User.updateOne(
       { _id: req.user.id },
-      { $set: { avatar: { contentType: req.file.mimetype, data: req.file.buffer, updatedAt: new Date() } } }
+      {
+        $set: {
+          avatar: {
+            contentType: req.file.mimetype,
+            data: req.file.buffer,
+            updatedAt: new Date(),
+          },
+        },
+      }
     );
     res.json({ message: 'อัปโหลดรูปโปรไฟล์เรียบร้อย' });
   } catch (e) {
@@ -53,7 +90,7 @@ router.post('/me/avatar', requireAuth, upload.single('avatar'), async (req, res)
   }
 });
 
-// ดึงอวาตาร์
+// ดึง avatar
 router.get('/me/avatar', requireAuth, async (req, res) => {
   const user = await User.findById(req.user.id).select('avatar');
   if (!user?.avatar?.data) return res.status(404).end();
@@ -62,13 +99,17 @@ router.get('/me/avatar', requireAuth, async (req, res) => {
   res.send(user.avatar.data);
 });
 
+/* -----------------------------------------------------------
+   4) Favorites
+----------------------------------------------------------- */
+
 // ดึงความชื่นชอบ
 router.get('/me/favorites', requireAuth, async (req, res) => {
   const user = await User.findById(req.user.id).select('favorites');
   res.json({ favorites: user.favorites || [] });
 });
 
-// ✅ อัปเดต favorites
+// อัปเดต favorites
 router.put('/me/favorites', requireAuth, async (req, res, next) => {
   try {
     const { favorites } = req.body;
@@ -81,8 +122,9 @@ router.put('/me/favorites', requireAuth, async (req, res, next) => {
       { new: true, runValidators: true }
     ).select('favorites');
     res.json({ favorites: user.favorites });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 });
-
 
 export default router;
