@@ -1,0 +1,39 @@
+/* กล่องรวมปุ่ม */
+.header-auth {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* <<< ระยะห่างระหว่างปุ่ม */
+}
+
+/* ปุ่มทั้งหมด */
+.auth-btn {
+  padding: 7px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ปุ่มเข้าสู่ระบบ */
+.login-btn {
+  background: #ffd54f;
+  color: #000;
+  border: 1px solid #f0c13a;
+}
+
+/* ปุ่มสมัครสมาชิก */
+.register-btn {
+  background: #2ecc71;
+  color: #fff;
+  border: 1px solid #28b463;
+}
+
+/* Hover */
+.auth-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}

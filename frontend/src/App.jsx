@@ -28,6 +28,7 @@ import AdminOrderSlip from './pages/AdminOrderSlip.jsx';
 import ProtectedRoute from './components/ProtectedRoute';
 import Payment from './pages/Payment.jsx';
 import SearchResults from './pages/SearchResults.jsx';
+import TrackOrder from './pages/TrackOrder.jsx';
 
 export default function App() {
   return (
@@ -42,6 +43,9 @@ export default function App() {
         <Route path="/browse/:name" element={<Browse />} />
         <Route path="/category" element={<Browse />} />
         <Route path="/category/:name" element={<Browse />} />
+
+        {/* หน้าติดตามสถานะการจัดส่ง (mock) */}
+        <Route path="/track" element={<TrackOrder />} />
 
         <Route path="/search" element={<SearchResults />} />
         <Route path="/login" element={<Login />} />
@@ -86,9 +90,30 @@ export default function App() {
           }
         />
         <Route path="/cart" element={<Cart />} />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/orders/:id" element={<OrderDetail />} />
-        <Route path="/orders/success" element={<OrderSuccess />} />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <Orders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders/:id"
+          element={
+            <ProtectedRoute>
+              <OrderDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders/success"
+          element={
+            <ProtectedRoute>
+              <OrderSuccess />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/settings"
           element={
@@ -157,7 +182,7 @@ export default function App() {
           }
         />
 
-        {/* Fallback */}
+        {/* Fallback (ถ้าอยากให้ทุก path แปลก ๆ กลับไปหน้าแรก) */}
         {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
       </Routes>
       <Footer />

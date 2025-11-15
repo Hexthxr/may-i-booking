@@ -1,9 +1,11 @@
-.catbar-wrapper {
-  background: linear-gradient(90deg, rgba(232, 245, 233, 0.9), rgba(227, 242, 253, 0.9));
-  padding: 8px 0 10px;
-  margin-bottom: 8px;
-}
+/* แถบหมวดหนังสือด้านล่าง HERO */
 
+.catbar-wrapper {
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 10px 0 12px;
+  margin-bottom: 12px;
+}
 
 .catbar-inner {
   display: flex;
@@ -12,36 +14,40 @@
   gap: 12px;
 }
 
+/* แถบหมวดเลื่อนซ้าย-ขวา */
 
 .catbar-scroll {
-  flex: 1 1 auto;
   display: flex;
+  align-items: center;
   gap: 8px;
   overflow-x: auto;
-  padding: 4px 2px;
+  padding-bottom: 4px;
+  scroll-behavior: smooth;
   scrollbar-width: thin;
 }
 
 .catbar-scroll::-webkit-scrollbar {
   height: 6px;
 }
+
 .catbar-scroll::-webkit-scrollbar-thumb {
   border-radius: 999px;
-  background: rgba(0,0,0,0.15);
+  background: rgba(0, 0, 0, 0.18);
 }
 
+/* หมวดแต่ละ pill */
 
 .cat-pill {
   flex: 0 0 auto;
   padding: 7px 14px;
   border-radius: 999px;
   background: #ffffff;
-  border: 1px solid #c8e6c9;
+  border: 1px solid #c9e4d1;
   font-size: 13px;
   font-weight: 700;
-  color: #1b5e20;
+  color: #166534;
   text-decoration: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   transition:
     background 0.15s ease,
     color 0.15s ease,
@@ -51,29 +57,29 @@
 
 .cat-pill:hover {
   transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
-
 
 .cat-pill-active {
-  background: #1b5e20;
+  background: #166534;
   color: #ffffff;
-  border-color: #1b5e20;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+  border-color: #166534;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
 }
 
+/* ปุ่ม "หนังสือทั้งหมด" ด้านขวา */
 
 .cat-all-btn {
   flex-shrink: 0;
   padding: 8px 16px;
   border-radius: 999px;
-  background: #ff9800;
+  background: #f97316;
   color: #ffffff;
   font-weight: 800;
   font-size: 13px;
   text-decoration: none;
   border: none;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.24);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.24);
   white-space: nowrap;
   transition:
     background 0.15s ease,
@@ -82,10 +88,12 @@
 }
 
 .cat-all-btn:hover {
-  background: #fb8c00;
+  background: #ea580c;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.28);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
 }
+
+/* จอเล็ก */
 
 @media (max-width: 640px) {
   .catbar-inner {

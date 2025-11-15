@@ -1,27 +1,30 @@
-/* กล่องใหญ่ */
+/* กล่องหนังสือแนะนำด้านบน (2 กล่อง) */
+
 .featured-box {
   background: #ffffff;
-  border-radius: 14px;
-  padding: 20px;
-  border: 3px solid #e53935;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  border-radius: 18px;
+  padding: 18px 18px 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
 }
 
 /* header */
+
 .featured-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #e53935;
-  color: #fff;
-  padding: 12px 16px;
-  border-radius: 12px;
-  margin-bottom: 14px;
+  padding: 8px 10px 10px;
+  margin: -8px -8px 10px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(47, 191, 113, 0.12), rgba(255, 221, 87, 0.3));
 }
 
 .featured-header h2 {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0;
+  color: #0f172a;
 }
 
 .featured-icon {
@@ -29,72 +32,85 @@
 }
 
 /* list item */
+
 .featured-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .featured-item {
   display: flex;
   align-items: center;
-  gap: 14px;
-  background: white;
-  border-radius: 12px;
-  padding: 12px;
-  border: 1px solid #e0e0e0;
+  gap: 12px;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
   text-decoration: none;
-  transition: 0.25s ease;
-  min-height: 110px;           /* ← ป้องกันแถวเตี้ยเกิน */
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+  min-height: 110px;
 }
 
 .featured-item:hover {
-  background: #fff7f7;
+  background: #f9fafb;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+  transform: translateY(-1px);
 }
 
 /* วงกลมลำดับ */
+
 .rank-circle {
-  width: 32px;
-  height: 32px;
-  background: #ffb300;
+  width: 28px;
+  height: 28px;
+  background: #f97316;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  color: #fff;
-  font-size: 16px;
+  color: #ffffff;
+  font-size: 14px;
 }
 
+/* ปกหนังสือ */
+
 .featured-cover {
-  width: 80px !important;       /* ← บังคับให้ใหญ่ขึ้น */
-  height: 110px !important;     /* ← FIX สำคัญสุด */
-  object-fit: cover !important; /* ← กันภาพยืด/แบน */
+  width: 80px !important;
+  height: 110px !important;
+  object-fit: cover !important;
   border-radius: 8px;
-  flex-shrink: 0;               /* ← กันโดนบีบจนเหลือ 0px */
+  flex-shrink: 0;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.22);
 }
+
+/* ข้อมูลหนังสือ */
 
 .featured-info {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .featured-title {
   font-size: 14px;
   font-weight: 700;
-  color: #333;
+  color: #111827;
   margin-bottom: 2px;
 }
 
 .featured-author {
   font-size: 12px;
-  color: #777;
+  color: #6b7280;
 }
 
 .featured-price {
   font-size: 15px;
   font-weight: 800;
-  color: #d32f2f;
+  color: #ea580c;
   margin-top: 4px;
 }

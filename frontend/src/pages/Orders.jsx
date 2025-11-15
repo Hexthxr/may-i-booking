@@ -1,6 +1,6 @@
 // frontend/src/pages/Orders.jsx
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import api, { apiBase } from '../api';
 import { useAuth } from '../context/AuthContext';
 import styles from '../styles/orders.module.css';
@@ -17,18 +17,16 @@ const STATUS_LABEL = {
 const FallbackImg =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgYAAAAAMAASsJTYQAAAAASUVORK5CYII=';
 
-// ฟอกข้อมูลตามแท็บแบบเข้ม (กันรายการหลุดแท็บ)
+// ฟอกตามแท็บ
 function applyTabFilter(items, statusTab) {
   const s = (statusTab || 'ALL').toUpperCase();
   if (s === 'ALL') return items;
 
-  // "ที่ต้องจัดส่ง" รวม PENDING/PAID/PROCESSING
   if (s === 'TO_SHIP') {
     const toShip = new Set(['PENDING', 'PAID', 'PROCESSING']);
     return items.filter(it => toShip.has((it.status || '').toUpperCase()));
   }
 
-  // ยอมรับทั้ง CANCELLED/CANCELED
   return items.filter(it => {
     const st = (it.status || '').toUpperCase();
     if (s === 'CANCELLED') return st === 'CANCELLED' || st === 'CANCELED';
@@ -47,8 +45,8 @@ function normalizeOrder(raw) {
   const total =
     Number(
       summary.total ??
-      raw.total ??
-      items.reduce((s, it) => s + Number(it.price || 0) * Number(it.qty || 1), 0)
+        raw.total ??
+        items.reduce((s, it) => s + Number(it.price || 0) * Number(it.qty || 1), 0)
     ) || 0;
   const status = (raw.status || '').toUpperCase() || 'PENDING';
 
@@ -81,14 +79,12 @@ export default function Orders() {
   const status = (sp.get('status') || 'ALL').toUpperCase();
   const isLoggedIn = !!token;
 
-  // ถ้ายังไม่ล็อกอิน → เด้งไปหน้า login
   useEffect(() => {
     if (!isLoggedIn) {
       nav('/login', { replace: true, state: { next: '/orders' } });
     }
   }, [isLoggedIn, nav]);
 
-  // โหลดรายการออเดอร์ครั้งเดียว เมื่อ login แล้ว
   useEffect(() => {
     if (!isLoggedIn) return;
     let cancelled = false;
@@ -101,15 +97,12 @@ export default function Orders() {
         const { data } = await api.get('/orders');
         const raw = Array.isArray(data)
           ? data
-          : (data?.items || data?.orders || data?.data || []);
+          : data?.items || data?.orders || data?.data || [];
         const normalized = raw.map(normalizeOrder);
-        if (!cancelled) {
-          setOrders(normalized);
-        }
+        if (!cancelled) setOrders(normalized);
       } catch (e) {
-        if (!cancelled) {
+        if (!cancelled)
           setError(e?.response?.data?.message || 'ไม่สามารถโหลดประวัติการสั่งซื้อได้');
-        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -120,7 +113,7 @@ export default function Orders() {
     };
   }, [isLoggedIn]);
 
-  // ฟิลเตอร์ตามแท็บ + q search
+  // filter
   const filtered = useMemo(() => {
     let list = applyTabFilter(orders, status);
     const key = q.trim().toLowerCase();
@@ -131,42 +124,25 @@ export default function Orders() {
         const itemMatch = (ord.items || []).some(it =>
           String(it.title || '').toLowerCase().includes(key)
         );
-        return (
-          idStr.includes(key) ||
-          addrName.includes(key) ||
-          itemMatch
-        );
+        return idStr.includes(key) || addrName.includes(key) || itemMatch;
       });
     }
     return list;
   }, [orders, status, q]);
 
   const total = filtered.length;
-  const totalPages = useMemo(
-    () => Math.max(1, Math.ceil(total / pageSize)),
-    [total, pageSize]
-  );
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(total / pageSize)), [total, pageSize]);
 
-  // ถ้าเปลี่ยน status หรือ q ให้กลับไปหน้า 1
-  useEffect(() => {
-    setPage(1);
-  }, [status, q, pageSize]);
-
-  // กัน page เกินจากจำนวนหน้า
-  useEffect(() => {
-    setPage(p => Math.min(p, totalPages));
-  }, [totalPages]);
+  useEffect(() => setPage(1), [status, q, pageSize]);
+  useEffect(() => setPage(p => Math.min(p, totalPages)), [totalPages]);
 
   const paged = useMemo(() => {
     const start = (page - 1) * pageSize;
     return filtered.slice(start, start + pageSize);
   }, [filtered, page, pageSize]);
 
-  const openDetail = id => {
-    nav(`/orders/${id}`, { state: { from: '/orders' } });
-  };
+  const openDetail = id => nav(`/orders/${id}`, { state: { from: '/orders' } });
 
-  // เปลี่ยนแท็บ (update URL + reset page)
   const setStatus = next => {
     const nextSp = new URLSearchParams(sp);
     nextSp.set('status', next);
@@ -174,7 +150,6 @@ export default function Orders() {
     setPage(1);
   };
 
-  // สั่งซื้ออีกครั้งจากออเดอร์เดิม → ไปหน้า checkout พร้อม state.items + warnings
   const handleReorder = async (orderId, e) => {
     e?.stopPropagation?.();
     setNotice('');
@@ -197,7 +172,6 @@ export default function Orders() {
 
   return (
     <div className={styles.container}>
-      {/* Header */}
       <div className={styles.header}>
         <h1 className={styles.title}>ประวัติการสั่งซื้อ</h1>
         <div className={styles.tools}>
@@ -210,10 +184,7 @@ export default function Orders() {
           <select
             className={styles.select}
             value={pageSize}
-            onChange={e => {
-              const v = Number(e.target.value) || 10;
-              setPageSize(v);
-            }}
+            onChange={e => setPageSize(Number(e.target.value) || 10)}
           >
             {[10, 20, 30, 50].map(n => (
               <option key={n} value={n}>
@@ -225,7 +196,7 @@ export default function Orders() {
       </div>
 
       {/* Tabs */}
-      <div className={styles.tabs} role="tablist" aria-label="ตัวกรองสถานะคำสั่งซื้อ">
+      <div className={styles.tabs} role="tablist">
         {STATUS.map(s => (
           <button
             key={s}
@@ -239,10 +210,9 @@ export default function Orders() {
         ))}
       </div>
 
-      {/* Toast / notice */}
-      {notice ? <div className={styles.toast}>{notice}</div> : null}
+      {notice && <div className={styles.toast}>{notice}</div>}
 
-      {/* Content */}
+      {/* Data */}
       {loading ? (
         <div className={styles.note}>กำลังโหลด…</div>
       ) : error ? (
@@ -260,35 +230,30 @@ export default function Orders() {
             const showItems =
               ord.items && ord.items.length
                 ? ord.items
-                : (ord.status || '').toUpperCase() === 'CANCELLED'
+                : ord.status === 'CANCELLED'
                 ? ord.cancelledItems || []
                 : [];
 
             const moreCount = Math.max(0, (showItems.length || 0) - 5);
 
-            const statusClass = (() => {
+            const statusClassName = (() => {
               const base = (ord.status || '').toLowerCase();
               if (base === 'cancelled') return styles.st_canceled;
               return styles['st_' + base] || '';
             })();
 
             return (
-              <div
-                key={ord.id}
-                className={styles.card}
-                onClick={() => openDetail(ord.id)}
-              >
+              <div key={ord.id} className={styles.card} onClick={() => openDetail(ord.id)}>
                 <div className={styles.rowTop}>
                   <div className={styles.left}>
                     <div className={styles.orderId}>#{ord.id}</div>
-                    {ord.createdAt && (
-                      <div className={styles.date}>
-                        {new Date(ord.createdAt).toLocaleString('th-TH')}
-                      </div>
-                    )}
+                    <div className={styles.date}>
+                      {ord.createdAt ? new Date(ord.createdAt).toLocaleString('th-TH') : ''}
+                    </div>
                   </div>
+
                   <div className={styles.right}>
-                    <span className={`${styles.badge} ${statusClass}`}>
+                    <span className={`${styles.badge} ${statusClassName}`}>
                       {STATUS_LABEL[ord.status] || ord.status}
                     </span>
                     <div className={styles.total}>
@@ -297,6 +262,7 @@ export default function Orders() {
                   </div>
                 </div>
 
+                {/* แสดงรายการหนังสือของออเดอร์ */}
                 <div className={styles.items}>
                   {showItems.slice(0, 5).map((it, idx) => {
                     const b = it.book || {};
@@ -305,42 +271,39 @@ export default function Orders() {
                       it.coverUrl ||
                       b.coverUrl ||
                       (bookId ? `${apiBase()}/books/${bookId}/cover` : null);
+
                     return (
                       <div key={idx} className={styles.item}>
                         <img
                           className={styles.cover}
                           src={cover || FallbackImg}
                           alt={it.title || b.title || 'book'}
-                          onError={e => {
-                            e.currentTarget.src = FallbackImg;
-                          }}
+                          onError={e => (e.currentTarget.src = FallbackImg)}
                         />
                         <div className={styles.meta}>
-                          <div className={styles.name}>
-                            {it.title || b.title || bookId}
-                          </div>
+                          <div className={styles.name}>{it.title || b.title || bookId}</div>
                           <div className={styles.qtyPrice}>
-                            ×{it.qty} • ฿
-                            {Number(it.price || b.price || 0).toLocaleString('th-TH')}
+                            ×{it.qty} • ฿{Number(it.price || b.price || 0).toLocaleString('th-TH')}
                           </div>
                         </div>
                       </div>
                     );
                   })}
-                  {moreCount > 0 && (
-                    <div className={styles.more}>+{moreCount} รายการ</div>
-                  )}
+                  {moreCount > 0 && <div className={styles.more}>+{moreCount} รายการ</div>}
                 </div>
 
-                {/* Actions */}
+                {/* Action buttons */}
                 <div className={styles.actionsRow}>
+                  {/* ปุ่มสั่งซ้ำ */}
                   <button
                     className={styles.btn}
                     onClick={e => handleReorder(ord.id, e)}
-                    title="สั่งซื้อรายการนี้อีกครั้ง (ไปหน้าชำระเงินทันที)"
+                    title="สั่งซื้อรายการนี้อีกครั้ง"
                   >
                     สั่งซื้ออีกครั้ง
                   </button>
+
+                  {/* ปุ่มดูรายละเอียด */}
                   <button
                     className={styles.btnGhost}
                     onClick={e => {
@@ -350,6 +313,15 @@ export default function Orders() {
                   >
                     ดูรายละเอียด
                   </button>
+
+                  {/* ⭐ ปุ่มใหม่: ติดตามพัสดุ */}
+                  <Link
+                    to={`/track?orderId=${encodeURIComponent(ord.id)}`}
+                    className={styles.btn}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    ติดตามพัสดุ
+                  </Link>
                 </div>
               </div>
             );

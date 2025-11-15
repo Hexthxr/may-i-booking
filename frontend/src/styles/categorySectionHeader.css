@@ -1,21 +1,26 @@
-/* แถวหัวข้อหมวด + ปุ่มดูทั้งหมด */
+/* หัวข้อหมวดหนังสือ + ปุ่มดูทั้งหมด */
+
 .home-cat-header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .home-section-title {
   margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
 }
 
-/* ปุ่ม "ดูทั้งหมด" ด้านขวา */
+/* ปุ่ม "ดูทั้งหมด" */
+
 .home-cat-more {
   font-size: 13px;
   font-weight: 700;
-  color: #ff9800;
+  color: #f97316;
   text-decoration: none;
   padding: 4px 12px;
   border-radius: 999px;
@@ -36,16 +41,23 @@
 }
 
 /* คารูเซล 4 ใบ */
+
+.home-section {
+  margin-bottom: 32px;
+}
+
 .home-carousel {
   position: relative;
 }
 
-/* ใช้ .grid เดิมของเฮีย แค่ครอบไว้เฉย ๆ */
+/* ใช้ .grid เดิมของโปรเจกต์ */
+
 .home-carousel .grid {
   margin: 0;
 }
 
 /* ปุ่มลูกศรเลื่อนซ้าย/ขวา */
+
 .home-carousel-arrow {
   position: absolute;
   top: 50%;
@@ -63,9 +75,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ff9800;
+  color: #f97316;
   transition:
-    transform 0.150s ease,
+    transform 0.15s ease,
     box-shadow 0.15s ease,
     background 0.15s ease;
   z-index: 2;
@@ -86,6 +98,7 @@
 }
 
 /* จอเล็ก: ขยับปุ่มเข้ามานิดนึง */
+
 @media (max-width: 640px) {
   .home-carousel-arrow-left {
     left: -10px;

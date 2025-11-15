@@ -265,10 +265,15 @@ export default function Header(){
             ) : (
               <>
                 {!user ? (
-                  <>
-                    <Link className="btn secondary" to="/login">เข้าสู่ระบบ</Link>
-                    <Link className="btn" to="/register">สมัครสมาชิก</Link>
-                  </>
+                  // 👇 ห่อปุ่มล็อกอิน/สมัครสมาชิกด้วย flex ที่มี gap ของตัวเอง
+                  <div style={{display:'flex', alignItems:'center', gap:8}}>
+                    <Link className="btn secondary" to="/login">
+                      เข้าสู่ระบบ
+                    </Link>
+                    <Link className="btn" to="/register">
+                      สมัครสมาชิก
+                    </Link>
+                  </div>
                 ) : (
                   <UserMenu user={user} onLogout={logout} />
                 )}
@@ -283,3 +288,4 @@ export default function Header(){
     </>
   );
 }
+

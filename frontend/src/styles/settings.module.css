@@ -1,0 +1,304 @@
+.page {
+  background: #f3f4f6;
+  padding: 24px 0 40px;
+  min-height: calc(100vh - 64px);
+}
+
+/* Header */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.title {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* user chip */
+
+.userChip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #22c55e, #a3e635);
+  color: #ffffff;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.userName {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.userEmail {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* layout */
+
+.layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 18px;
+}
+
+/* sidebar */
+
+.sidebar {
+  background: #f9fafb;
+  border-radius: 18px;
+  padding: 12px 10px;
+  border: 1px solid #e5e7eb;
+}
+
+.sidebarGroupLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #9ca3af;
+  padding: 6px 10px 2px;
+}
+
+.sideItem {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  color: #374151;
+  cursor: default;
+}
+
+.sideItemActive {
+  background: #e0f2fe;
+  color: #0369a1;
+  font-weight: 700;
+}
+
+/* content */
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* card */
+
+.card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 16px 18px 14px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.cardSubtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.cardSectionTitle {
+  margin: 6px 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* fields */
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px 18px;
+  margin-top: 4px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4b5563;
+}
+
+.fieldValue {
+  font-size: 13px;
+  color: #111827;
+}
+
+.fieldHint {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.rowBetween {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.divider {
+  border-top: 1px dashed #e5e7eb;
+  margin: 10px 0;
+}
+
+/* buttons */
+
+.ghostBtn {
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.primaryOutline {
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  border: 1px solid #22c55e;
+  background: #f0fdf4;
+  color: #16a34a;
+  cursor: not-allowed;
+}
+
+/* badges */
+
+.badgeMuted {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+/* toggle */
+
+.toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 6px 2px 2px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  cursor: pointer;
+  min-width: 64px;
+  justify-content: flex-start;
+}
+
+.toggleOn {
+  background: #22c55e;
+  border-color: #16a34a;
+}
+
+.toggleThumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.2);
+}
+
+.toggleLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4b5563;
+}
+
+.toggleOn .toggleLabel {
+  color: #ecfdf5;
+}
+
+/* dev note */
+
+.devNote {
+  margin: 4px 2px 0;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* responsive */
+
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .userChip {
+    align-self: stretch;
+  }
+
+  .rowBetween {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
