@@ -3,38 +3,29 @@ info:
   title: May i Booking API
   version: 1.0.0
   description: >
-    OpenAPI spec for May i Booking project.
+    OpenAPI spec สำหรับโปรเจกต์ May i Booking
     แบ่งหมวดตาม feature (Auth, Users, Books, Reviews, Cart, Addresses, Orders)
-    และใช้ tag / x-roles เพื่อบอกว่า endpoint ไหนใช้โดย Guest / User / Admin
+    และใช้ tag + x-roles เพื่อบอกว่า endpoint ไหนใช้โดย Guest / User / Admin
 
 servers:
   - url: http://localhost:4000
     description: Local development server
 
 tags:
-  # ตามประเภทฟีเจอร์
   - name: Auth
-    description: Authentication and authorization endpoints
+    description: Authentication & registration
   - name: Users
-    description: User profile and favorites
+    description: ข้อมูลผู้ใช้ โปรไฟล์ avatar favorites
   - name: Books
-    description: Book catalog and admin book management
+    description: หนังสือและการจัดการโดยแอดมิน
   - name: Reviews
-    description: Book reviews and ratings
+    description: รีวิวและเรตติ้งหนังสือ
   - name: Cart
-    description: Shopping cart for users
+    description: ตะกร้าสินค้า / local cart sync
   - name: Addresses
-    description: User address book
+    description: ที่อยู่จัดส่งของผู้ใช้
   - name: Orders
-    description: Order placement and management
-
-  # ตาม Role
-  - name: Guest
-    description: Public endpoints that don't require login
-  - name: User
-    description: Endpoints for logged-in users (user or admin)
-  - name: Admin
-    description: Endpoints that require admin role
+    description: คำสั่งซื้อ จ่ายเงิน อัพโหลดสลิป
 
 components:
   securitySchemes:
@@ -51,21 +42,28 @@ components:
           type: string
         code:
           type: string
-      required: [message]
+      required:
+        - message
 
     User:
       type: object
       properties:
-        _id:
+        id:
+          type: string
+        username:
           type: string
         email:
           type: string
           format: email
-        displayName:
-          type: string
         role:
           type: string
           enum: [user, admin]
+        fullname:
+          type: string
+        favorites:
+          type: array
+          items:
+            type: string
         createdAt:
           type: string
           format: date-time
@@ -76,25 +74,34 @@ components:
     RegisterRequest:
       type: object
       properties:
+        username:
+          type: string
         email:
           type: string
           format: email
         password:
           type: string
           minLength: 6
-        displayName:
+        adminCode:
           type: string
-      required: [email, password]
+          description: "ถ้าถูกต้องจะสมัครเป็น admin"
+      required:
+        - username
+        - email
+        - password
 
     LoginRequest:
       type: object
       properties:
-        email:
+        usernameOrEmail:
           type: string
-          format: email
+          description: "ใส่ได้ทั้ง username หรือ email (ตรงกับ backend ที่ใช้ usernameOrEmail)"
         password:
           type: string
-      required: [email, password]
+          format: password
+      required:
+        - usernameOrEmail
+        - password
 
     AuthResponse:
       type: object
@@ -103,30 +110,52 @@ components:
           type: string
         user:
           $ref: '#/components/schemas/User'
+      required:
+        - token
+        - user
 
-    Book:
+    UpdateProfileRequest:
       type: object
       properties:
-        _id:
+        fullname:
           type: string
-        title:
+        email:
           type: string
-        authors:
+          format: email
+      additionalProperties: false
+
+    FavoritesUpdateRequest:
+      type: object
+      properties:
+        favorites:
           type: array
           items:
             type: string
-        category:
+      required:
+        - favorites
+
+    Address:
+      type: object
+      properties:
+        id:
           type: string
-        description:
+        fullName:
           type: string
-        price:
-          type: number
-          format: float
-        stock:
-          type: integer
-        sku:
+        phone:
           type: string
-        isActive:
+        line1:
+          type: string
+        line2:
+          type: string
+        subdistrict:
+          type: string
+        district:
+          type: string
+        province:
+          type: string
+        postcode:
+          type: string
+        isDefault:
           type: boolean
         createdAt:
           type: string
@@ -135,7 +164,73 @@ components:
           type: string
           format: date-time
 
-    BookCreateRequest:
+    AddressCreateUpdateRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: string
+        line1:
+          type: string
+        line2:
+          type: string
+        subdistrict:
+          type: string
+        district:
+          type: string
+        province:
+          type: string
+        postcode:
+          type: string
+        isDefault:
+          type: boolean
+      required:
+        - fullName
+        - phone
+        - line1
+        - subdistrict
+        - district
+        - province
+        - postcode
+
+    Book:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+        price:
+          type: number
+          format: float
+        stock:
+          type: integer
+        isPreorder:
+          type: boolean
+        isHidden:
+          type: boolean
+        description:
+          type: string
+        avgRating:
+          type: number
+          format: float
+        ratingCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    BookCreateUpdateRequest:
       type: object
       properties:
         title:
@@ -146,25 +241,30 @@ components:
             type: string
         category:
           type: string
-        description:
-          type: string
         price:
           type: number
           format: float
         stock:
           type: integer
-        sku:
+        isPreorder:
+          type: boolean
+        isHidden:
+          type: boolean
+        description:
           type: string
-      required: [title, price, stock]
+      required:
+        - title
+        - category
+        - price
 
     Review:
       type: object
       properties:
-        _id:
-          type: string
-        bookId:
+        id:
           type: string
         userId:
+          type: string
+        bookId:
           type: string
         rating:
           type: integer
@@ -179,7 +279,7 @@ components:
           type: string
           format: date-time
 
-    ReviewCreateRequest:
+    ReviewUpsertRequest:
       type: object
       properties:
         rating:
@@ -188,7 +288,8 @@ components:
           maximum: 5
         comment:
           type: string
-      required: [rating]
+      required:
+        - rating
 
     RatingSummary:
       type: object
@@ -198,31 +299,22 @@ components:
           format: float
         count:
           type: integer
-        distribution:
-          type: object
-          additionalProperties:
-            type: integer
-      example:
-        average: 4.5
-        count: 12
-        distribution:
-          "5": 8
-          "4": 3
-          "3": 1
 
     CartItem:
       type: object
       properties:
         bookId:
           type: string
+        qty:
+          type: integer
         title:
           type: string
         price:
           type: number
           format: float
-        qty:
-          type: integer
-      required: [bookId, qty]
+      required:
+        - bookId
+        - qty
 
     Cart:
       type: object
@@ -240,105 +332,22 @@ components:
 
     CartSyncRequest:
       type: object
+      description: "ใช้ sync local cart กับ server (front ส่ง array ของ {bookId, qty})"
       properties:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/CartItem'
-      required: [items]
-
-    CartAddItemRequest:
-      type: object
-      properties:
-        bookId:
-          type: string
-        qty:
-          type: integer
-          minimum: 1
-      required: [bookId, qty]
-
-    CartRemoveItemRequest:
-      type: object
-      properties:
-        bookId:
-          type: string
-      required: [bookId]
-
-    CartUpdateQtyRequest:
-      type: object
-      properties:
-        bookId:
-          type: string
-        qty:
-          type: integer
-          minimum: 0
-      required: [bookId, qty]
-
-    Address:
-      type: object
-      properties:
-        _id:
-          type: string
-        fullName:
-          type: string
-        phone:
-          type: string
-        addressLine:
-          type: string
-        district:
-          type: string
-        province:
-          type: string
-        postcode:
-          type: string
-        isDefault:
-          type: boolean
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-
-    AddressCreateRequest:
-      type: object
-      properties:
-        fullName:
-          type: string
-        phone:
-          type: string
-        addressLine:
-          type: string
-        district:
-          type: string
-        province:
-          type: string
-        postcode:
-          type: string
+            type: object
+            properties:
+              bookId:
+                type: string
+              qty:
+                type: integer
+            required:
+              - bookId
+              - qty
       required:
-        - fullName
-        - phone
-        - addressLine
-        - province
-        - postcode
-
-    AddressUpdateRequest:
-      type: object
-      properties:
-        fullName:
-          type: string
-        phone:
-          type: string
-        addressLine:
-          type: string
-        district:
-          type: string
-        province:
-          type: string
-        postcode:
-          type: string
-        isDefault:
-          type: boolean
+        - items
 
     OrderItem:
       type: object
@@ -352,12 +361,14 @@ components:
           format: float
         qty:
           type: integer
-      required: [bookId, qty]
+      required:
+        - bookId
+        - qty
 
     Order:
       type: object
       properties:
-        _id:
+        id:
           type: string
         userId:
           type: string
@@ -372,12 +383,12 @@ components:
           enum: [COD, TRANSFER]
         status:
           type: string
-          enum: [PENDING, PAID, PROCESSING, SHIPPED, COMPLETED, CANCELLED]
+          description: "เช่น PENDING, PAID, PROCESSING, SHIPPED, COMPLETED, CANCELLED"
+        slipUrl:
+          type: string
         total:
           type: number
           format: float
-        slipUploaded:
-          type: boolean
         createdAt:
           type: string
           format: date-time
@@ -393,26 +404,32 @@ components:
         paymentMethod:
           type: string
           enum: [COD, TRANSFER]
-      required: [addressId, paymentMethod]
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CartItem'
+      required:
+        - addressId
+        - paymentMethod
+        - items
 
     OrderStatusUpdateRequest:
       type: object
       properties:
         status:
           type: string
-          enum: [PAID, PROCESSING, SHIPPED, COMPLETED, CANCELLED]
-      required: [status]
+      required:
+        - status
 
 paths:
-
   ################################
-  #           AUTH               #
+  #            AUTH              #
   ################################
 
   /api/auth/register:
     post:
-      tags: [Auth, Guest]
-      summary: Register a new user
+      tags: [Auth]
+      summary: Register new account
       x-roles: [guest]
       requestBody:
         required: true
@@ -422,13 +439,19 @@ paths:
               $ref: '#/components/schemas/RegisterRequest'
       responses:
         '201':
-          description: Registered successfully
+          description: User registered
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AuthResponse'
         '400':
-          description: Invalid input
+          description: Missing fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: User exists
           content:
             application/json:
               schema:
@@ -436,8 +459,8 @@ paths:
 
   /api/auth/login:
     post:
-      tags: [Auth, Guest]
-      summary: Login with email and password
+      tags: [Auth]
+      summary: Login with username/email and password
       x-roles: [guest]
       requestBody:
         required: true
@@ -445,6 +468,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/LoginRequest'
+            example:
+              usernameOrEmail: "user@example.com"
+              password: "123456"
       responses:
         '200':
           description: Login successful
@@ -460,13 +486,13 @@ paths:
                 $ref: '#/components/schemas/Error'
 
   ################################
-  #           USERS              #
+  #            USERS             #
   ################################
 
   /api/users/me:
     get:
-      tags: [Users, User]
-      summary: Get current user profile
+      tags: [Users]
+      summary: Get my profile
       security:
         - BearerAuth: []
       x-roles: [user, admin]
@@ -479,13 +505,10 @@ paths:
                 $ref: '#/components/schemas/User'
         '401':
           description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-    patch:
-      tags: [Users, User]
-      summary: Update current user profile
+
+    put:
+      tags: [Users]
+      summary: Update my profile
       security:
         - BearerAuth: []
       x-roles: [user, admin]
@@ -494,29 +517,43 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                displayName:
-                  type: string
+              $ref: '#/components/schemas/UpdateProfileRequest'
       responses:
         '200':
-          description: Updated user profile
+          description: Updated profile
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
         '400':
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '401':
-          description: Unauthorized
+          description: Bad request
 
-  /api/users/me/favorites:
+  /api/users/avatar:
+    put:
+      tags: [Users]
+      summary: Upload my avatar
+      security:
+        - BearerAuth: []
+      x-roles: [user, admin]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Avatar updated
+        '400':
+          description: Invalid file
+
+  /api/users/favorites:
     get:
-      tags: [Users, User]
+      tags: [Users]
       summary: Get favorite books of current user
       security:
         - BearerAuth: []
@@ -533,9 +570,10 @@ paths:
                     type: array
                     items:
                       type: string
+
     put:
-      tags: [Users, User]
-      summary: Replace favorite books list
+      tags: [Users]
+      summary: Update favorite book IDs
       security:
         - BearerAuth: []
       x-roles: [user, admin]
@@ -544,76 +582,140 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                favorites:
-                  type: array
-                  items:
-                    type: string
+              $ref: '#/components/schemas/FavoritesUpdateRequest'
       responses:
         '200':
           description: Updated favorites
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/FavoritesUpdateRequest'
+
+  /api/users/admin/list:
+    get:
+      tags: [Users]
+      summary: List all users (admin)
+      security:
+        - BearerAuth: []
+      x-roles: [admin]
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
                 type: object
                 properties:
-                  favorites:
+                  users:
                     type: array
                     items:
-                      type: string
+                      $ref: '#/components/schemas/User'
+        '403':
+          description: Forbidden
 
-  /api/users/me/avatar:
+  ################################
+  #            ADDRESSES         #
+  ################################
+
+  /api/addresses:
+    get:
+      tags: [Addresses]
+      summary: Get my addresses
+      security:
+        - BearerAuth: []
+      x-roles: [user, admin]
+      responses:
+        '200':
+          description: List of addresses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Address'
+
     post:
-      tags: [Users, User]
-      summary: Upload avatar for current user
+      tags: [Addresses]
+      summary: Create new address
       security:
         - BearerAuth: []
       x-roles: [user, admin]
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
-              type: object
-              properties:
-                file:
-                  type: string
-                  format: binary
+              $ref: '#/components/schemas/AddressCreateUpdateRequest'
       responses:
-        '200':
-          description: Avatar uploaded successfully
-    get:
-      tags: [Users, User]
-      summary: Get avatar image of current user
+        '201':
+          description: Created address
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+
+  /api/addresses/{id}:
+    put:
+      tags: [Addresses]
+      summary: Update address
       security:
         - BearerAuth: []
       x-roles: [user, admin]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressCreateUpdateRequest'
       responses:
         '200':
-          description: Avatar image
+          description: Updated address
           content:
-            image/png: {}
-            image/jpeg: {}
-        '404':
-          description: Avatar not found
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+
+    delete:
+      tags: [Addresses]
+      summary: Delete address
+      security:
+        - BearerAuth: []
+      x-roles: [user, admin]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Deleted
 
   ################################
-  #           BOOKS              #
+  #            BOOKS             #
   ################################
 
   /api/books:
     get:
-      tags: [Books, Guest, User, Admin]
-      summary: Get list of books
+      tags: [Books]
+      summary: List books
       x-roles: [guest, user, admin]
       parameters:
         - in: query
-          name: category
+          name: search
           schema:
             type: string
         - in: query
-          name: q
+          name: category
           schema:
             type: string
         - in: query
@@ -630,13 +732,16 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Book'
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Book'
 
     post:
-      tags: [Books, Admin]
-      summary: Create a new book (admin only)
+      tags: [Books]
+      summary: Create book (admin)
       security:
         - BearerAuth: []
       x-roles: [admin]
@@ -645,67 +750,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookCreateRequest'
+              $ref: '#/components/schemas/BookCreateUpdateRequest'
       responses:
         '201':
-          description: Book created
+          description: Created book
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Book'
-        '400':
-          description: Invalid input
-        '403':
-          description: Forbidden
-
-  /api/books/recommended:
-    get:
-      tags: [Books, Guest, User, Admin]
-      summary: Get recommended books
-      x-roles: [guest, user, admin]
-      responses:
-        '200':
-          description: Recommended books
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Book'
-
-  /api/books/top-rated:
-    get:
-      tags: [Books, Guest, User, Admin]
-      summary: Get top-rated books
-      x-roles: [guest, user, admin]
-      responses:
-        '200':
-          description: Top-rated books
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Book'
-
-  /api/books/best-sellers:
-    get:
-      tags: [Books, Guest, User, Admin]
-      summary: Get best seller books
-      x-roles: [guest, user, admin]
-      responses:
-        '200':
-          description: Best seller books
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Book'
 
   /api/books/{id}:
     get:
-      tags: [Books, Guest, User, Admin]
+      tags: [Books]
       summary: Get book detail
       x-roles: [guest, user, admin]
       parameters:
@@ -722,11 +778,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Book'
         '404':
-          description: Book not found
+          description: Not found
 
     put:
-      tags: [Books, Admin]
-      summary: Update a book (admin only)
+      tags: [Books]
+      summary: Update book (admin)
       security:
         - BearerAuth: []
       x-roles: [admin]
@@ -741,20 +797,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookCreateRequest'
+              $ref: '#/components/schemas/BookCreateUpdateRequest'
       responses:
         '200':
-          description: Book updated
+          description: Updated book
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Book'
-        '404':
-          description: Book not found
 
     delete:
-      tags: [Books, Admin]
-      summary: Delete a book (admin only)
+      tags: [Books]
+      summary: Hide/Delete book (admin)
       security:
         - BearerAuth: []
       x-roles: [admin]
@@ -766,13 +820,11 @@ paths:
             type: string
       responses:
         '204':
-          description: Book deleted
-        '404':
-          description: Book not found
+          description: Deleted/hidden
 
   /api/books/{id}/cover:
     get:
-      tags: [Books, Guest, User, Admin]
+      tags: [Books]
       summary: Get book cover image
       x-roles: [guest, user, admin]
       parameters:
@@ -783,21 +835,18 @@ paths:
             type: string
       responses:
         '200':
-          description: Book cover image
-          content:
-            image/png: {}
-            image/jpeg: {}
+          description: Image binary
         '404':
-          description: Cover not found
+          description: Not found
 
   ################################
-  #          REVIEWS             #
+  #           REVIEWS            #
   ################################
 
   /api/books/{bookId}/reviews:
     get:
-      tags: [Reviews, Guest, User, Admin]
-      summary: Get reviews for a book
+      tags: [Reviews]
+      summary: List reviews for a book
       x-roles: [guest, user, admin]
       parameters:
         - in: path
@@ -807,16 +856,20 @@ paths:
             type: string
       responses:
         '200':
-          description: Reviews list
+          description: List reviews
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Review'
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Review'
+
     post:
-      tags: [Reviews, User]
-      summary: Create or update review for a book
+      tags: [Reviews]
+      summary: Create or update my review for a book
       security:
         - BearerAuth: []
       x-roles: [user, admin]
@@ -831,20 +884,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReviewCreateRequest'
+              $ref: '#/components/schemas/ReviewUpsertRequest'
       responses:
-        '201':
-          description: Review created / updated
+        '200':
+          description: Upserted review
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Review'
-        '401':
-          description: Unauthorized
 
   /api/books/{bookId}/reviews/rating:
     get:
-      tags: [Reviews, Guest, User, Admin]
+      tags: [Reviews]
       summary: Get rating summary for a book
       x-roles: [guest, user, admin]
       parameters:
@@ -863,8 +914,8 @@ paths:
 
   /api/books/{bookId}/reviews/me:
     delete:
-      tags: [Reviews, User]
-      summary: Delete current user's review for a book
+      tags: [Reviews]
+      summary: Delete my review for a book
       security:
         - BearerAuth: []
       x-roles: [user, admin]
@@ -876,29 +927,30 @@ paths:
             type: string
       responses:
         '204':
-          description: Review deleted
+          description: Deleted
 
   ################################
-  #            CART              #
+  #             CART             #
   ################################
 
   /api/cart:
     get:
-      tags: [Cart, User]
-      summary: Get current user's cart
+      tags: [Cart]
+      summary: Get my cart
       security:
         - BearerAuth: []
       x-roles: [user, admin]
       responses:
         '200':
-          description: Current cart
+          description: Cart detail
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Cart'
+
     post:
-      tags: [Cart, User]
-      summary: Sync entire cart items
+      tags: [Cart]
+      summary: Sync local cart with server
       security:
         - BearerAuth: []
       x-roles: [user, admin]
@@ -910,216 +962,53 @@ paths:
               $ref: '#/components/schemas/CartSyncRequest'
       responses:
         '200':
-          description: Cart synced
+          description: Synced cart
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Cart'
+
     delete:
-      tags: [Cart, User]
-      summary: Clear cart
+      tags: [Cart]
+      summary: Clear my cart
       security:
         - BearerAuth: []
       x-roles: [user, admin]
       responses:
-        '204':
+        '200':
           description: Cart cleared
-
-  /api/cart/items:
-    post:
-      tags: [Cart, User]
-      summary: Add item to cart
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CartAddItemRequest'
-      responses:
-        '200':
-          description: Item added to cart
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Cart'
-    delete:
-      tags: [Cart, User]
-      summary: Remove item from cart
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CartRemoveItemRequest'
-      responses:
-        '200':
-          description: Item removed from cart
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Cart'
-
-  /api/cart/qty:
-    put:
-      tags: [Cart, User]
-      summary: Update quantity of cart item
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CartUpdateQtyRequest'
-      responses:
-        '200':
-          description: Quantity updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Cart'
-
-  ################################
-  #          ADDRESSES           #
-  ################################
-
-  /api/addresses:
-    get:
-      tags: [Addresses, User]
-      summary: Get all addresses of current user
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      responses:
-        '200':
-          description: Address list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Address'
-    post:
-      tags: [Addresses, User]
-      summary: Create new address for current user
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddressCreateRequest'
-      responses:
-        '201':
-          description: Address created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Address'
-
-  /api/addresses/{id}:
-    get:
-      tags: [Addresses, User]
-      summary: Get single address by id
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Address detail
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Address'
-        '404':
-          description: Address not found
-    patch:
-      tags: [Addresses, User]
-      summary: Update address
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddressUpdateRequest'
-      responses:
-        '200':
-          description: Address updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Address'
-        '404':
-          description: Address not found
-    delete:
-      tags: [Addresses, User]
-      summary: Delete address
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Address deleted
-        '404':
-          description: Address not found
-
-  /api/addresses/{id}/default:
-    patch:
-      tags: [Addresses, User]
-      summary: Set address as default
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Default address set
-        '404':
-          description: Address not found
 
   ################################
   #            ORDERS            #
   ################################
 
   /api/orders:
+    get:
+      tags: [Orders]
+      summary: List my orders
+      security:
+        - BearerAuth: []
+      x-roles: [user, admin]
+      responses:
+        '200':
+          description: List of my orders
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Order'
+
     post:
-      tags: [Orders, User]
-      summary: Create new order from current cart
+      tags: [Orders]
+      summary: Create new order from cart
       security:
         - BearerAuth: []
       x-roles: [user, admin]
@@ -1131,59 +1020,16 @@ paths:
               $ref: '#/components/schemas/OrderCreateRequest'
       responses:
         '201':
-          description: Order created
+          description: Created order
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
-    get:
-      tags: [Orders, User]
-      summary: Get orders of current user
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      responses:
-        '200':
-          description: Orders list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Order'
-
-  /api/orders/admin:
-    get:
-      tags: [Orders, Admin]
-      summary: Get all orders (admin only)
-      security:
-        - BearerAuth: []
-      x-roles: [admin]
-      parameters:
-        - in: query
-          name: status
-          schema:
-            type: string
-        - in: query
-          name: userId
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Orders list (admin)
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Order'
-        '403':
-          description: Forbidden
 
   /api/orders/{id}:
     get:
-      tags: [Orders, User, Admin]
-      summary: Get order detail by id
+      tags: [Orders]
+      summary: Get order detail (owner or admin)
       security:
         - BearerAuth: []
       x-roles: [user, admin]
@@ -1201,103 +1047,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Order'
         '404':
-          description: Order not found
+          description: Not found
 
-  /api/orders/{id}/cancel:
     patch:
-      tags: [Orders, User]
-      summary: Cancel order (owner only)
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Order cancelled
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-        '400':
-          description: Cannot cancel order in current status
-
-  /api/orders/{id}/reorder:
-    post:
-      tags: [Orders, User]
-      summary: Create new order from an existing order
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        '201':
-          description: New order created from previous one
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Order'
-
-  /api/orders/{id}/slip:
-    post:
-      tags: [Orders, User]
-      summary: Upload payment slip for an order
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                file:
-                  type: string
-                  format: binary
-      responses:
-        '200':
-          description: Slip uploaded
-    get:
-      tags: [Orders, User, Admin]
-      summary: Get payment slip image for an order
-      security:
-        - BearerAuth: []
-      x-roles: [user, admin]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Slip image
-          content:
-            image/png: {}
-            image/jpeg: {}
-        '404':
-          description: Slip not found
-
-  /api/orders/{id}/complete:
-    patch:
-      tags: [Orders, Admin]
-      summary: Mark order as completed (admin only)
+      tags: [Orders]
+      summary: Update order status (admin)
       security:
         - BearerAuth: []
       x-roles: [admin]
@@ -1323,4 +1077,4 @@ paths:
         '403':
           description: Forbidden
         '404':
-          description: Order not found
+          description: Not found
