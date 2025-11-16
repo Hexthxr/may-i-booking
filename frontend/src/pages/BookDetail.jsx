@@ -5,6 +5,14 @@ import { useAuth } from '../context/AuthContext';
 import { addToLocalCart, addServerCart } from '../utils/cart';
 import Stars from '../components/Stars';
 
+
+const RESERVATION_KEY = (user) => {
+  // ถ้าไม่ได้ล็อกอินจะถือเป็น guest แยก key ไปเลย
+  if (!user) return 'mib:reservations:guest';
+  const id = user?._id || user?.id || user?.email || 'user';
+  return `mib:reservations:${id}`;
+};
+
 export default function BookDetail() {
   const { id } = useParams();
   const [book, setBook] = useState(null);
@@ -72,10 +80,13 @@ export default function BookDetail() {
     }
   };
 
-  // จองหนังสือ -> บันทึก localStorage + แจ้งกระดิ่ง
-  function reserveBook(){
-    if(!book) return;
-    const key = 'mib:reservations';
+    // จองหนังสือ -> บันทึก localStorage แยกตาม user + แจ้งกระดิ่ง
+  function reserveBook() {
+    if (!book) return;
+
+    // ใช้ key ตาม user ปัจจุบัน (หรือ guest ถ้าไม่ล็อกอิน)
+    const key = RESERVATION_KEY(user);
+
     const list = JSON.parse(localStorage.getItem(key) || '[]');
     const next = [
       ...list,
@@ -85,9 +96,10 @@ export default function BookDetail() {
         qty: Number(qty) || 1,
         price: Number(book.price || 0),
         coverUrl: `${apiBase()}/books/${book._id}/cover`,
-        ts: Date.now()
-      }
+        ts: Date.now(),
+      },
     ];
+
     localStorage.setItem(key, JSON.stringify(next));
     window.dispatchEvent(new Event('mib:notify')); // ให้กระดิ่งอัปเดต
     alert('จองหนังสือแล้ว!');
