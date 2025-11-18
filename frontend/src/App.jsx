@@ -44,13 +44,15 @@ export default function App() {
 
         {/* Browse ทุกหมวด + ผ่าน query */}
         <Route path="/browse" element={<Browse />} />
-        {/* เผื่อมีใช้ /browse/:category */}
         <Route path="/browse/:category" element={<Browse />} />
-        {/* ลิงก์แบบ /category/มังงะ → redirect ไป /browse?category=มังงะ */}
         <Route path="/category/:category" element={<CategoryRedirect />} />
 
         <Route path="/book/:id" element={<BookDetail />} />
         <Route path="/search" element={<SearchResults />} />
+
+        {/* ✅ เพิ่มอันนี้ เพื่อรองรับ /track?orderId=... */}
+        <Route path="/track" element={<TrackOrder />} />
+        {/* ของเดิมจะยังใช้ได้เหมือนเดิม */}
         <Route path="/track-order" element={<TrackOrder />} />
 
         {/* Auth */}
@@ -59,22 +61,22 @@ export default function App() {
 
         {/* Customer */}
         <Route
-  path="/profile"
-  element={
-    <ProtectedRoute>
-      <Account />
-    </ProtectedRoute>
-  }
-/>
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Account />
+            </ProtectedRoute>
+          }
+        />
 
-<Route
-  path="/account"
-  element={
-    <ProtectedRoute>
-      <Account />
-    </ProtectedRoute>
-  }
-/>
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute>
+              <Account />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/account/address"
